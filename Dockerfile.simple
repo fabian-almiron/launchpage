@@ -1,0 +1,63 @@
+# Simplified Dockerfile for LaunchPage Builder
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install serve globally
+RUN npm install -g serve
+
+# Create a custom serve configuration file to handle SPA routing
+RUN echo '{"public": "/app/public", "rewrites": [{"source": "/**", "destination": "/index.html"}], "headers": [{"source": "/**", "headers": [{"key": "Cache-Control", "value": "no-store, no-cache, must-revalidate"}]}], "trailingSlash": false}' > /app/serve.json
+
+# Copy frontend files
+COPY frontend/public /app/public
+
+# Create enhanced mock authentication
+RUN mkdir -p /app/public/shared && \
+    echo 'window.DEMO_MODE = true; \
+    const mockToken = "mock-jwt-token"; \
+    localStorage.setItem("token", mockToken); \
+    \
+    /* Override the checkAuth function in layout.js to prevent redirect loops */ \
+    window.checkAuthOverride = async function() { \
+      return { \
+        id: "mock-user-id", \
+        name: "Demo User", \
+        email: "demo@example.com", \
+        role: "admin" \
+      }; \
+    }; \
+    \
+    /* Override window.fetch for API calls */ \
+    const originalFetch = window.fetch; \
+    window.fetch = function(url, options = {}) { \
+      if (typeof url === "string" && url.includes("/api/me")) { \
+        return Promise.resolve(new Response( \
+          JSON.stringify({ \
+            id: "mock-user-id", \
+            name: "Demo User", \
+            email: "demo@example.com", \
+            role: "admin" \
+          }), \
+          { status: 200, headers: { "Content-Type": "application/json" } } \
+        )); \
+      } \
+      return originalFetch.apply(this, arguments); \
+    };' > /app/public/shared/auto-login.js
+
+# Add auto-login script to all pages that need it
+RUN sed -i '/<\/head>/i\    <script src="\/shared\/auto-login.js"><\/script>' /app/public/index.html || true
+RUN sed -i '/<\/head>/i\    <script src="\/shared\/auto-login.js"><\/script>' /app/public/login.html || true
+RUN sed -i '/<\/head>/i\    <script src="\/shared\/auto-login.js"><\/script>' /app/public/dashboard.html || true
+RUN sed -i '/<\/head>/i\    <script src="\/shared\/auto-login.js"><\/script>' /app/public/edit-page.html || true
+RUN sed -i '/<\/head>/i\    <script src="\/shared\/auto-login.js"><\/script>' /app/public/add-page.html || true
+
+# Patch layout.js to use our override if available
+RUN sed -i 's/async function checkAuth() {/async function checkAuth() {\n  if (window.checkAuthOverride) return window.checkAuthOverride();/' /app/public/shared/layout.js || true
+
+# Expose port 3000
+EXPOSE 3000
+
+# Start the serve command
+CMD ["serve", "-l", "3000"] 

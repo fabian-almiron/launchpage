@@ -1,37 +1,15 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: launchpage
-      POSTGRES_USER: launchuser
-      POSTGRES_PASSWORD: launchpass
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  backend:
+  launchpage:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3001:3001"
-    depends_on:
-      - db
-
-  frontend:
-    image: node:18
-    working_dir: /frontend
+      - "3000:3000"
+    restart: unless-stopped
     volumes:
-      - ./frontend:/frontend
-    ports:
-      - "8080:8080"
-    command: >
-      sh -c "npm install &&
-             npm run build &&
-             npx live-server public"
+      - launchpage_data:/app/data
 
 volumes:
-  pgdata:
+  launchpage_data:

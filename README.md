@@ -26,7 +26,13 @@ A modern drag-and-drop website builder with themes, inline editing, autosave, an
 npm install launchpage-builder
 ```
 
-### Option 2: Install from zip
+### Option 2: Install from GitHub
+
+```bash
+npm install fabian-almiron/launchpage_starter_builder_themes
+```
+
+### Option 3: Install from zip
 
 1. Download the `launchpage-builder.zip` file
 2. Extract the contents to your desired location
@@ -92,6 +98,10 @@ launchpage-builder/
 ## Demo Mode
 
 The application includes a mock API for demonstration purposes. In a real deployment, you would connect to your actual backend services.
+
+## GitHub Repository
+
+This project is available on GitHub at: [https://github.com/fabian-almiron/launchpage_starter_builder_themes](https://github.com/fabian-almiron/launchpage_starter_builder_themes)
 
 ## License
 

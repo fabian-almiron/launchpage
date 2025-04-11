@@ -1,26 +1,30 @@
-# Dockerfile
+# Dockerfile for LaunchPage Builder
 FROM node:18
 
 # Set working directory
 WORKDIR /app
 
-# Install backend dependencies
-COPY backend/package*.json ./backend/
-RUN cd backend && npm install
+# Copy package.json and related files
+COPY package*.json ./
+COPY tailwind.config.js ./
+COPY install.js ./
+COPY LICENSE ./
+COPY README.md ./
 
-# Install frontend dependencies
-COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install
+# Install dependencies with specific flags to avoid loops and increase verbosity
+RUN npm install --no-fund --no-audit --verbose --loglevel=info
 
-# Copy the rest of the application code
+# Copy frontend directory
 COPY frontend /app/frontend
-COPY backend /app/backend
 
-# Generate Prisma client
-RUN cd backend && npx prisma generate
+# Make sure the dist directory exists
+RUN mkdir -p /app/frontend/public/dist
 
-# Build Tailwind (optional step if using static output)
-RUN cd frontend && npm run build
+# Build CSS with Tailwind
+RUN npm run build
 
-# Start the backend
-CMD ["node", "backend/app.js"]
+# Expose port 3000
+EXPOSE 3000
+
+# Start the application
+CMD ["npm", "start"]

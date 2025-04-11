@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pages | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/mock-api.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    async function renderPagesContent(container, user) {
+      // Remove loading indicator safely
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      // Create actions section
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'mb-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3';
+      actionsDiv.innerHTML = `
+        <button id="create-page-btn" class="btn-primary btn-effect flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+          New Page
+        </button>
+        <a href="/templates.html" class="btn-secondary btn-effect flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+          </svg>
+          Use Template
+        </a>
+      `;
+      container.appendChild(actionsDiv);
+      
+      // Create search section
+      const searchDiv = document.createElement('div');
+      searchDiv.className = 'mb-6';
+      searchDiv.innerHTML = `
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <input id="search-input" type="text" class="input pl-10" placeholder="Search pages...">
+        </div>
+      `;
+      container.appendChild(searchDiv);
+      
+      // Create pages list section
+      const listDiv = document.createElement('div');
+      listDiv.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
+      listDiv.id = 'page-list';
+      
+      // Add loading effect
+      listDiv.innerHTML = `
+        <div class="animate-pulse">
+          <div class="rounded-lg bg-white h-48 shadow"></div>
+          <div class="h-4 bg-gray-200 rounded w-3/4 mt-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+        </div>
+        <div class="animate-pulse">
+          <div class="rounded-lg bg-white h-48 shadow"></div>
+          <div class="h-4 bg-gray-200 rounded w-3/4 mt-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+        </div>
+        <div class="animate-pulse">
+          <div class="rounded-lg bg-white h-48 shadow"></div>
+          <div class="h-4 bg-gray-200 rounded w-3/4 mt-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
+        </div>
+      `;
+      
+      container.appendChild(listDiv);
+      
+      // Create empty state
+      const emptyStateDiv = document.createElement('div');
+      emptyStateDiv.className = 'hidden text-center py-16';
+      emptyStateDiv.id = 'empty-state';
+      emptyStateDiv.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No pages found</h3>
+        <p class="text-gray-500 mt-1">Get started by creating a new page.</p>
+        <button id="empty-create-btn" class="mt-4 btn-primary btn-effect">Create New Page</button>
+      `;
+      container.appendChild(emptyStateDiv);
+      
+      // Fetch and render pages
+      await loadPages();
+      
+      // Setup event listeners
+      document.getElementById('create-page-btn').addEventListener('click', createPage);
+      document.getElementById('empty-create-btn').addEventListener('click', createPage);
+      document.getElementById('search-input').addEventListener('input', filterPages);
+    }
+    
+    // Global variable to store pages
+    let allPages = [];
+    
+    async function loadPages() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch("http://localhost:3001/api/pages", {
+          headers: { Authorization: "Bearer " + token }
+        });
+        
+        allPages = await res.json();
+        
+        renderPageList(allPages);
+      } catch (error) {
+        console.error('Error loading pages:', error);
+        renderPageList([]);
+      }
+    }
+    
+    function renderPageList(pages) {
+      const list = document.getElementById("page-list");
+      const emptyState = document.getElementById("empty-state");
+      
+      list.innerHTML = "";
+      
+      if (pages.length === 0) {
+        list.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      list.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      
+      pages.forEach(page => {
+        const card = document.createElement("div");
+        card.className = "card card-hover overflow-hidden flex flex-col animate-fade-in";
+        
+        // Preview content (simplified, would be better with a proper HTML renderer)
+        let previewContent = page.content || "<div class='text-center text-gray-400 p-4'>Empty Page</div>";
+        
+        card.innerHTML = `
+          <div class="border-b p-4 flex justify-between items-center">
+            <h3 class="font-medium truncate">${page.title || "Untitled Page"}</h3>
+            <div class="dropdown relative">
+              <button class="p-1 rounded hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+              <div class="dropdown-menu hidden absolute right-0 mt-1 py-1 w-48 bg-white rounded-md shadow-lg z-10">
+                <a href="/edit-page.html?id=${page.id}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit</a>
+                <button onclick="deletePage('${page.id}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Delete</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex-1 p-4 overflow-auto bg-gray-50" style="max-height: 120px;">
+            <div class="prose prose-sm max-w-none">
+              ${previewContent}
+            </div>
+          </div>
+          <div class="border-t p-4 flex justify-between items-center">
+            <span class="text-xs text-gray-500">Updated: ${new Date(page.updatedAt || Date.now()).toLocaleDateString()}</span>
+            <a href="/edit-page.html?id=${page.id}" class="btn-secondary text-sm py-1">Edit</a>
+          </div>
+        `;
+        
+        // Add event listener for dropdown menu
+        const dropdownButton = card.querySelector('.dropdown button');
+        const dropdownMenu = card.querySelector('.dropdown-menu');
+        
+        if (dropdownButton && dropdownMenu) {
+          dropdownButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', () => {
+            dropdownMenu.classList.add('hidden');
+          });
+        }
+        
+        list.appendChild(card);
+      });
+    }
+    
+    function filterPages(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredPages = allPages.filter(page => 
+        (page.title && page.title.toLowerCase().includes(searchTerm)) || 
+        (page.content && page.content.toLowerCase().includes(searchTerm))
+      );
+      renderPageList(filteredPages);
+    }
+    
+    async function createPage() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch("http://localhost:3001/api/pages", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ title: "Untitled Page", content: "" })
+        });
+        
+        if (res.ok) {
+          const page = await res.json();
+          window.location.href = "/edit-page.html?id=" + page.id;
+        }
+      } catch (error) {
+        console.error("Error creating page:", error);
+      }
+    }
+    
+    async function deletePage(id) {
+      if (!confirm("Are you sure you want to delete this page?")) {
+        return;
+      }
+      
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`http://localhost:3001/api/pages/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+        
+        if (res.ok) {
+          loadPages();
+        }
+      } catch (error) {
+        console.error("Error deleting page:", error);
+      }
+    }
+    
+    // Initialize the pages view
+    setupDashboard('pages', 'My Pages', renderPagesContent);
+  </script>
+</body>
+</html>

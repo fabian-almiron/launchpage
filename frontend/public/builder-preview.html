@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Page Builder Preview | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+  <style>
+    .block-item { cursor: grab; }
+    .drop-zone { 
+      border: 2px dashed #e5e7eb; 
+      min-height: 300px; 
+      padding: 1rem; 
+      transition: background-color 0.2s;
+    }
+    .drop-zone.active {
+      background-color: #f0f9ff;
+      border-color: #93c5fd;
+    }
+    .editable:focus {
+      outline: 2px solid #3b82f6;
+      border-radius: 4px;
+    }
+    .theme-modern * {
+      font-family: 'Inter', sans-serif;
+    }
+    .theme-elegant * {
+      font-family: 'Georgia', serif;
+    }
+    .theme-bold * {
+      font-family: 'Arial Black', sans-serif;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/layout.js"></script>
+  <script>
+    async function renderBuilderPreviewContent(container, user) {
+      // Remove loading indicator
+      document.getElementById('loading').remove();
+
+      // Create builder interface
+      const builderSection = document.createElement('div');
+      builderSection.className = 'grid grid-cols-1 md:grid-cols-4 gap-6';
+      
+      // Left sidebar - blocks
+      const sidebar = document.createElement('div');
+      sidebar.className = 'md:col-span-1';
+      sidebar.innerHTML = `
+        <div class="card sticky top-20">
+          <div class="mb-4 border-b pb-2">
+            <h3 class="font-medium">Page blocks</h3>
+            <p class="text-sm text-gray-500">Drag and drop to build your page</p>
+          </div>
+          <div class="space-y-2">
+            <div class="block-item bg-white p-3 border rounded shadow-sm" draggable="true" data-html="<section class='p-6 text-center bg-indigo-600 text-white'><h2 class='text-2xl font-bold editable' contenteditable='true'>Hero Section</h2><p class='text-lg editable' contenteditable='true'>Grab attention with a bold header</p></section>">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                Hero Block
+              </div>
+            </div>
+            <div class="block-item bg-white p-3 border rounded shadow-sm" draggable="true" data-html="<section class='p-6'><form class='space-y-2'><input class='border w-full p-2 rounded' placeholder='Your email'/><button class='bg-indigo-600 text-white px-4 py-2 rounded editable' contenteditable='true'>Subscribe</button></form></section>">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                </svg>
+                Form Block
+              </div>
+            </div>
+            <div class="block-item bg-white p-3 border rounded shadow-sm" draggable="true" data-html="<section class='p-6 bg-gray-100 text-center'><blockquote class='text-lg italic editable' contenteditable='true'>&quot;This platform helped us launch in hours, not weeks!&quot;</blockquote><cite class='block mt-4 text-gray-600 editable' contenteditable='true'>– Satisfied Customer</cite></section>">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                </svg>
+                Testimonial
+              </div>
+            </div>
+            <div class="block-item bg-white p-3 border rounded shadow-sm" draggable="true" data-html="<section class='p-8'><div class='grid grid-cols-1 sm:grid-cols-2 gap-4'><div class='p-4 border rounded shadow-sm'><h3 class='font-bold editable' contenteditable='true'>Feature 1</h3><p class='text-gray-600 editable' contenteditable='true'>Description goes here</p></div><div class='p-4 border rounded shadow-sm'><h3 class='font-bold editable' contenteditable='true'>Feature 2</h3><p class='text-gray-600 editable' contenteditable='true'>Description goes here</p></div></div></section>">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                Features Grid
+              </div>
+            </div>
+            <div class="block-item bg-white p-3 border rounded shadow-sm" draggable="true" data-html="<section class='p-6 bg-indigo-700 text-white text-center'><h2 class='text-xl font-bold mb-2 editable' contenteditable='true'>Ready to get started?</h2><button class='mt-2 bg-white text-indigo-700 px-6 py-2 rounded editable' contenteditable='true'>Contact Us</button></section>">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+                </svg>
+                CTA Block
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Main content - builder canvas
+      const mainContent = document.createElement('div');
+      mainContent.className = 'md:col-span-3';
+      mainContent.innerHTML = `
+        <div class="mb-4 flex flex-wrap gap-2 items-center">
+          <div>
+            <label for="theme-picker" class="text-sm text-gray-600">Theme:</label>
+            <select id="theme-picker" class="border rounded text-sm p-1">
+              <option value="modern">Modern</option>
+              <option value="elegant">Elegant</option>
+              <option value="bold">Bold</option>
+            </select>
+          </div>
+          <button id="clear-btn" class="text-sm text-red-600 hover:underline ml-auto">Clear Canvas</button>
+        </div>
+        
+        <div id="drop-zone" class="drop-zone bg-white rounded shadow-sm">
+          <div class="text-center text-gray-400 py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+            <p>Drag blocks here to start building your page</p>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex justify-end space-x-2">
+          <button id="preview-btn" class="bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+              </svg>
+              Preview
+            </span>
+          </button>
+          <button id="save-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+              </svg>
+              Save
+            </span>
+          </button>
+          <button id="export-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+              Export HTML
+            </span>
+          </button>
+        </div>
+        
+        <div id="status" class="mt-2 text-sm text-green-600"></div>
+        
+        <div class="mt-8">
+          <div class="bg-gray-800 text-gray-200 p-4 rounded-t flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            Live Code
+          </div>
+          <pre id="code-preview" class="bg-gray-900 text-gray-200 p-4 rounded-b overflow-auto text-sm" style="max-height: 200px;"></pre>
+        </div>
+      `;
+      
+      builderSection.appendChild(sidebar);
+      builderSection.appendChild(mainContent);
+      container.appendChild(builderSection);
+      
+      // Initialize drag and drop functionality
+      initDragAndDrop();
+      
+      // Initialize theme picker
+      document.getElementById('theme-picker').addEventListener('change', function() {
+        applyTheme(this.value);
+      });
+      
+      // Initialize clear button
+      document.getElementById('clear-btn').addEventListener('click', function() {
+        clearDropZone();
+      });
+      
+      // Initialize preview button
+      document.getElementById('preview-btn').addEventListener('click', function() {
+        previewPage();
+      });
+      
+      // Initialize save button
+      document.getElementById('save-btn').addEventListener('click', function() {
+        savePage();
+      });
+      
+      // Initialize export button
+      document.getElementById('export-btn').addEventListener('click', function() {
+        exportHTML();
+      });
+    }
+    
+    function initDragAndDrop() {
+      const dropZone = document.getElementById('drop-zone');
+      const blockItems = document.querySelectorAll('.block-item');
+      
+      blockItems.forEach(block => {
+        block.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/html', this.getAttribute('data-html'));
+        });
+      });
+      
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('active');
+      });
+      
+      dropZone.addEventListener('dragleave', function() {
+        this.classList.remove('active');
+      });
+      
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('active');
+        
+        // Clear placeholder if it's the first block
+        if (this.querySelector('.text-gray-400')) {
+          this.innerHTML = '';
+        }
+        
+        const html = e.dataTransfer.getData('text/html');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative group mb-4';
+        wrapper.innerHTML = html;
+        
+        // Add remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity';
+        removeBtn.innerHTML = '×';
+        removeBtn.addEventListener('click', function() {
+          wrapper.remove();
+          updateCodePreview();
+          if (dropZone.children.length === 0) {
+            dropZone.innerHTML = `
+              <div class="text-center text-gray-400 py-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+                <p>Drag blocks here to start building your page</p>
+              </div>
+            `;
+          }
+        });
+        wrapper.appendChild(removeBtn);
+        
+        // Add drag handle
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'absolute top-0 left-0 bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move';
+        dragHandle.innerHTML = '≡';
+        dragHandle.setAttribute('draggable', 'true');
+        dragHandle.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', '');
+          dropZone.dragging = wrapper;
+        });
+        wrapper.appendChild(dragHandle);
+        
+        this.appendChild(wrapper);
+        updateCodePreview();
+        
+        // Make text editable
+        setupContentEditable();
+      });
+      
+      dropZone.addEventListener('dragend', function() {
+        this.classList.remove('active');
+      });
+    }
+    
+    function setupContentEditable() {
+      document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.addEventListener('focus', function() {
+          this.dataset.originalText = this.innerHTML;
+        });
+        
+        el.addEventListener('blur', function() {
+          if (this.dataset.originalText !== this.innerHTML) {
+            updateCodePreview();
+          }
+        });
+        
+        el.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.blur();
+          }
+        });
+      });
+    }
+    
+    function applyTheme(theme) {
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.classList.remove('theme-modern', 'theme-elegant', 'theme-bold');
+      dropZone.classList.add('theme-' + theme);
+      updateCodePreview();
+    }
+    
+    function clearDropZone() {
+      if (confirm('Are you sure you want to clear the canvas? This cannot be undone.')) {
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.innerHTML = `
+          <div class="text-center text-gray-400 py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+            <p>Drag blocks here to start building your page</p>
+          </div>
+        `;
+        updateCodePreview();
+      }
+    }
+    
+    function updateCodePreview() {
+      const dropZone = document.getElementById('drop-zone');
+      const codePreview = document.getElementById('code-preview');
+      
+      // Clone the drop zone to remove the control buttons
+      const clone = dropZone.cloneNode(true);
+      
+      // Remove the control elements from the clone
+      clone.querySelectorAll('.absolute').forEach(el => el.remove());
+      
+      // Set content
+      let content = clone.innerHTML;
+      if (content.includes('text-gray-400')) {
+        content = '';
+      }
+      
+      codePreview.textContent = content.trim();
+    }
+    
+    function previewPage() {
+      const dropZone = document.getElementById('drop-zone');
+      const content = dropZone.innerHTML;
+      
+      if (content.includes('text-gray-400')) {
+        alert('Please add some content to preview.');
+        return;
+      }
+      
+      // Create preview window
+      const previewWindow = window.open('', 'preview', 'width=800,height=600');
+      
+      // Create preview document
+      const theme = document.getElementById('theme-picker').value;
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Page Preview</title>
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+          <link href="/dist/output.css" rel="stylesheet">
+          <style>
+            .theme-modern * { font-family: 'Inter', sans-serif; }
+            .theme-elegant * { font-family: 'Georgia', serif; }
+            .theme-bold * { font-family: 'Arial Black', sans-serif; font-weight: bold; }
+          </style>
+        </head>
+        <body class="theme-${theme}">
+          <div class="max-w-6xl mx-auto p-4">
+            ${dropZone.innerHTML}
+          </div>
+        </body>
+        </html>
+      `;
+      
+      previewWindow.document.open();
+      previewWindow.document.write(html);
+      previewWindow.document.close();
+    }
+    
+    function savePage() {
+      const dropZone = document.getElementById('drop-zone');
+      const content = dropZone.innerHTML;
+      
+      if (content.includes('text-gray-400')) {
+        alert('Please add some content before saving.');
+        return;
+      }
+      
+      // Clone the drop zone to remove the control buttons
+      const clone = dropZone.cloneNode(true);
+      
+      // Remove the control elements from the clone
+      clone.querySelectorAll('.absolute').forEach(el => el.remove());
+      
+      // Create simplified content
+      const cleanContent = clone.innerHTML;
+      
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = 'Saving page...';
+      
+      // Simulate API call (would use fetch in a real app)
+      setTimeout(() => {
+        statusElement.textContent = 'Page saved successfully!';
+        setTimeout(() => {
+          statusElement.textContent = '';
+        }, 3000);
+      }, 1000);
+    }
+    
+    function exportHTML() {
+      const dropZone = document.getElementById('drop-zone');
+      const content = dropZone.innerHTML;
+      
+      if (content.includes('text-gray-400')) {
+        alert('Please add some content before exporting.');
+        return;
+      }
+      
+      // Clone the drop zone to remove the control buttons
+      const clone = dropZone.cloneNode(true);
+      
+      // Remove the control elements from the clone
+      clone.querySelectorAll('.absolute').forEach(el => el.remove());
+      
+      // Create simplified content
+      const cleanContent = clone.innerHTML;
+      
+      // Create HTML file
+      const theme = document.getElementById('theme-picker').value;
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>LaunchPage Export</title>
+          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          <style>
+            .theme-modern * { font-family: 'Helvetica Neue', sans-serif; }
+            .theme-elegant * { font-family: 'Georgia', serif; }
+            .theme-bold * { font-family: 'Arial Black', sans-serif; font-weight: bold; }
+          </style>
+        </head>
+        <body class="theme-${theme}">
+          <div class="max-w-6xl mx-auto p-4">
+            ${cleanContent}
+          </div>
+        </body>
+        </html>
+      `;
+      
+      // Create download link
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(html));
+      element.setAttribute('download', 'launchpage-export.html');
+      
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      
+      element.click();
+      
+      document.body.removeChild(element);
+    }
+    
+    // Initialize the page
+    setupDashboard('builder-preview', 'Page Builder', renderBuilderPreviewContent);
+  </script>
+</body>
+</html> 

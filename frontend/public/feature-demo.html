@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feature Demo | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/mock-api.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    async function renderFeatureDemoContent(container, user) {
+      // Remove loading indicator safely
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+
+      // Title and welcome
+      const welcomeSection = document.createElement('div');
+      welcomeSection.className = 'mb-8';
+      welcomeSection.innerHTML = `
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-lg shadow-lg p-8 text-white">
+          <h1 class="text-3xl font-bold mb-2">LaunchPage Feature Demo</h1>
+          <p class="text-xl text-indigo-100">Experience our powerful page builder and publishing tools</p>
+        </div>
+      `;
+      container.appendChild(welcomeSection);
+
+      // Core feature demo section
+      const featuresSection = document.createElement('div');
+      featuresSection.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-10';
+      
+      const features = [
+        {
+          title: "Drag & Drop Builder",
+          description: "Create landing pages by dragging blocks into place. No coding required.",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>',
+          demo: "#builder-demo",
+          buttonText: "Try Builder Demo",
+          videoSrc: "https://example.com/videos/drag-drop-demo.mp4" // Placeholder
+        },
+        {
+          title: "Inline Editing",
+          description: "Edit text directly on the page - what you see is what you get.",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>',
+          demo: "#inline-demo",
+          buttonText: "Try Inline Editor",
+          videoSrc: "https://example.com/videos/inline-editing.mp4" // Placeholder
+        },
+        {
+          title: "Theme Picker",
+          description: "Change the look and feel of your page in one click with prebuilt themes.",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>',
+          demo: "#theme-demo",
+          buttonText: "Try Theme Picker",
+          videoSrc: "https://example.com/videos/theme-picker.mp4" // Placeholder
+        },
+        {
+          title: "Version History",
+          description: "Browse and restore previous versions of your pages.",
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+          demo: "#version-demo",
+          buttonText: "View Version History",
+          videoSrc: "https://example.com/videos/version-history.mp4" // Placeholder
+        }
+      ];
+      
+      features.forEach(feature => {
+        const featureCard = document.createElement('div');
+        featureCard.className = 'card card-hover';
+        featureCard.innerHTML = `
+          <div class="flex">
+            <div class="flex-shrink-0 mr-4">
+              ${feature.icon}
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-semibold mb-2">${feature.title}</h3>
+              <p class="text-gray-600 mb-4">${feature.description}</p>
+              <div class="relative overflow-hidden rounded-lg bg-gray-100 mb-4" style="height: 180px;">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <a href="/builder.html" class="btn-primary inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                ${feature.buttonText}
+              </a>
+            </div>
+          </div>
+        `;
+        featuresSection.appendChild(featureCard);
+      });
+      
+      container.appendChild(featuresSection);
+
+      // Publishing options section
+      const publishingSection = document.createElement('div');
+      publishingSection.className = 'mb-10';
+      publishingSection.innerHTML = `
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b">Publishing Options</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card card-hover text-center p-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium mb-2">Preview Mode</h3>
+            <p class="text-gray-600 mb-4">Share a preview link with your team before publishing.</p>
+            <a href="/preview.html" class="btn-secondary">View Demo</a>
+          </div>
+          
+          <div class="card card-hover text-center p-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium mb-2">Download HTML</h3>
+            <p class="text-gray-600 mb-4">Export your page as a standalone HTML file.</p>
+            <a href="/builder.html" class="btn-secondary">Try HTML Export</a>
+          </div>
+          
+          <div class="card card-hover text-center p-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium mb-2">WordPress Export</h3>
+            <p class="text-gray-600 mb-4">Publish directly to your WordPress site.</p>
+            <a href="/builder.html" class="btn-secondary">Try WP Export</a>
+          </div>
+        </div>
+      `;
+      container.appendChild(publishingSection);
+
+      // Role management section
+      const rolesSection = document.createElement('div');
+      rolesSection.className = 'mb-10';
+      rolesSection.innerHTML = `
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b">Team & Role Management</h2>
+        <div class="card">
+          <div class="overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">Admin</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Full access to all features and settings</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <ul class="list-disc ml-5">
+                      <li>Create and edit pages</li>
+                      <li>Delete pages</li>
+                      <li>Manage team members</li>
+                      <li>Billing management</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Editor</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Can create and edit content</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <ul class="list-disc ml-5">
+                      <li>Create and edit pages</li>
+                      <li>Access page builder</li>
+                      <li>Preview and publish pages</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Viewer</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Read-only access</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <ul class="list-disc ml-5">
+                      <li>View pages</li>
+                      <li>View analytics</li>
+                      <li>No editing capabilities</li>
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-center">
+          <a href="/team-users.html" class="btn-primary">
+            Manage Team
+          </a>
+        </div>
+      `;
+      container.appendChild(rolesSection);
+
+      // Call-to-action section
+      const ctaSection = document.createElement('div');
+      ctaSection.className = 'bg-indigo-600 rounded-lg shadow-lg p-8 text-center text-white';
+      ctaSection.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Ready to create beautiful pages?</h2>
+        <p class="text-indigo-100 mb-6 max-w-2xl mx-auto">Start building responsive landing pages, marketing sites, and more with our easy-to-use drag and drop builder.</p>
+        <div class="flex justify-center space-x-4">
+          <a href="/templates.html" class="bg-white text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-lg font-medium">
+            Create New Page
+          </a>
+          <a href="/pages.html" class="bg-indigo-700 text-white hover:bg-indigo-800 px-6 py-3 rounded-lg font-medium">
+            View My Pages
+          </a>
+        </div>
+      `;
+      container.appendChild(ctaSection);
+    }
+    
+    // Initialize the feature demo page
+    setupDashboard(null, 'Feature Demo', renderFeatureDemoContent);
+  </script>
+</body>
+</html> 

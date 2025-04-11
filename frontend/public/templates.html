@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Templates | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/mock-api.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    // Template data
+    const templates = [
+      {
+        name: "Start from Scratch",
+        html: "",
+        category: "All",
+        description: "Begin with a blank page and build it exactly how you want."
+      },
+      {
+        name: "Simple Hero",
+        html: `<section class='bg-blue-600 text-white text-center p-12'><h1 class='text-4xl font-bold mb-2'>Welcome to LaunchPage</h1><p class='text-lg'>Your fast and flexible page builder</p></section>`,
+        category: "Hero",
+        description: "A clean, bold header section to introduce your brand or product."
+      },
+      {
+        name: "Lead Form",
+        html: `<section class='p-8 max-w-xl mx-auto text-center'><h2 class='text-2xl font-semibold mb-4'>Get Early Access</h2><input class='border p-2 rounded w-full mb-4' placeholder='Your email'/><button class='bg-blue-600 text-white px-4 py-2 rounded'>Join Now</button></section>`,
+        category: "Forms",
+        description: "Capture leads with this simple email signup form."
+      },
+      {
+        name: "Content + Image",
+        html: `<section class='grid grid-cols-1 md:grid-cols-2 gap-8 p-8 items-center'><div><h2 class='text-3xl font-bold mb-4'>Built for speed</h2><p>Create pages in seconds with a few clicks.</p></div><img src='https://via.placeholder.com/400x300' class='rounded shadow'/></section>`,
+        category: "Content",
+        description: "Showcase your content alongside a relevant image."
+      },
+      {
+        name: "Testimonial Section",
+        html: `<section class='bg-gray-100 p-8 text-center'><blockquote class='italic max-w-2xl mx-auto'>"This platform helped us launch in hours, not weeks!"</blockquote><cite class='block mt-4 text-gray-600'>– Satisfied Customer</cite></section>`,
+        category: "Testimonials",
+        description: "Build trust with customer testimonials."
+      },
+      {
+        name: "Feature Grid",
+        html: `<section class='p-8'><h2 class='text-2xl font-bold mb-6 text-center'>Key Features</h2><div class='grid grid-cols-1 sm:grid-cols-2 gap-4'><div class='p-4 border rounded'>Fast & Flexible</div><div class='p-4 border rounded'>No Coding Required</div><div class='p-4 border rounded'>SEO Ready</div><div class='p-4 border rounded'>Mobile Optimized</div></div></section>`,
+        category: "Features",
+        description: "List your product's key features in an easy-to-scan grid."
+      },
+      {
+        name: "Call to Action Footer",
+        html: `<footer class='bg-blue-700 text-white text-center p-8'><h2 class='text-xl font-bold mb-2'>Ready to launch your next page?</h2><button class='mt-2 bg-white text-blue-700 px-6 py-2 rounded'>Get Started</button></footer>`,
+        category: "Call to Action",
+        description: "Drive conversions with a prominent call to action."
+      },
+      {
+        name: "Pricing Table",
+        html: `<section class='p-8'><h2 class='text-2xl font-bold mb-6 text-center'>Pricing Plans</h2><div class='grid grid-cols-1 md:grid-cols-3 gap-6'><div class='border rounded p-6 text-center'><h3 class='text-xl font-bold'>Basic</h3><p class='text-3xl font-bold my-4'>$9<span class='text-sm font-normal'>/mo</span></p><ul class='space-y-2 mb-6'><li>Feature 1</li><li>Feature 2</li></ul><button class='bg-blue-600 text-white px-6 py-2 rounded w-full'>Select</button></div><div class='border rounded p-6 text-center bg-blue-50 border-blue-500'><h3 class='text-xl font-bold'>Pro</h3><p class='text-3xl font-bold my-4'>$19<span class='text-sm font-normal'>/mo</span></p><ul class='space-y-2 mb-6'><li>Feature 1</li><li>Feature 2</li><li>Feature 3</li></ul><button class='bg-blue-600 text-white px-6 py-2 rounded w-full'>Select</button></div><div class='border rounded p-6 text-center'><h3 class='text-xl font-bold'>Enterprise</h3><p class='text-3xl font-bold my-4'>$49<span class='text-sm font-normal'>/mo</span></p><ul class='space-y-2 mb-6'><li>Feature 1</li><li>Feature 2</li><li>Feature 3</li><li>Feature 4</li></ul><button class='bg-blue-600 text-white px-6 py-2 rounded w-full'>Select</button></div></div></section>`,
+        category: "Pricing",
+        description: "Display your pricing options in a clear, attractive format."
+      }
+    ];
+
+    async function renderTemplatesContent(container, user) {
+      // Remove loading indicator safely
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      // Create category filter buttons
+      const categories = ['All', 'Hero', 'Forms', 'Content', 'Testimonials', 'Features', 'Call to Action', 'Pricing'];
+      const filtersDiv = document.createElement('div');
+      filtersDiv.className = 'mb-6 overflow-x-auto pb-2';
+      
+      const filterButtonsContainer = document.createElement('div');
+      filterButtonsContainer.className = 'flex space-x-2';
+      
+      categories.forEach(category => {
+        const button = document.createElement('button');
+        button.className = 'btn-secondary whitespace-nowrap';
+        button.textContent = category;
+        button.dataset.category = category;
+        button.addEventListener('click', () => filterTemplates(category));
+        filterButtonsContainer.appendChild(button);
+      });
+      
+      filtersDiv.appendChild(filterButtonsContainer);
+      container.appendChild(filtersDiv);
+      
+      // Create templates container
+      const templatesGrid = document.createElement('div');
+      templatesGrid.id = 'template-list';
+      templatesGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+      container.appendChild(templatesGrid);
+      
+      // Render all templates initially
+      renderTemplates('All');
+      
+      // Mark the 'All' button as active
+      setTimeout(() => {
+        const allButton = document.querySelector('button[data-category="All"]');
+        if (allButton) {
+          allButton.classList.remove('btn-secondary');
+          allButton.classList.add('btn-primary');
+        }
+      }, 0);
+    }
+    
+    function renderTemplates(filter = 'All') {
+      const container = document.getElementById("template-list");
+      container.innerHTML = '';
+      
+      // Update active filter button
+      document.querySelectorAll('button[data-category]').forEach(btn => {
+        if (btn.dataset.category === filter) {
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-primary');
+        } else {
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-secondary');
+        }
+      });
+      
+      templates.forEach((tpl, index) => {
+        if (filter === 'All' || tpl.category === filter) {
+          const card = document.createElement("div");
+          card.className = "card card-hover animate-fade-in flex flex-col";
+          
+          // Template preview (simplified)
+          let previewContent = tpl.html || "<div class='text-center text-gray-400 p-4'>Empty Template</div>";
+          
+          card.innerHTML = `
+            <div class="p-4 border-b">
+              <h3 class="font-medium text-lg">${tpl.name}</h3>
+              <div class="flex items-center mt-1">
+                <span class="badge badge-info">${tpl.category}</span>
+              </div>
+            </div>
+            <div class="p-4 bg-gray-50 flex-1 overflow-auto" style="max-height: 160px;">
+              <p class="text-sm text-gray-600 mb-3">${tpl.description || ''}</p>
+              <div class="border rounded bg-white p-3 shadow-sm overflow-auto" style="max-height: 100px;">
+                <div class="prose prose-sm max-w-none">
+                  ${previewContent}
+                </div>
+              </div>
+            </div>
+            <div class="p-4 border-t">
+              <button onclick="createFromTemplate(${index})" class="btn-primary w-full">
+                Use Template
+              </button>
+            </div>
+          `;
+          
+          container.appendChild(card);
+        }
+      });
+    }
+    
+    function filterTemplates(category) {
+      renderTemplates(category);
+    }
+    
+    async function createFromTemplate(index) {
+      const token = localStorage.getItem("token");
+      const template = templates[index];
+      
+      try {
+        const res = await fetch("http://localhost:3001/api/pages", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title: template.name,
+            content: template.html
+          })
+        });
+        
+        if (res.ok) {
+          const page = await res.json();
+          window.location.href = "/edit-page.html?id=" + page.id;
+        }
+      } catch (error) {
+        console.error("Error creating page from template:", error);
+      }
+    }
+    
+    // Initialize the templates view
+    setupDashboard('templates', 'Page Templates', renderTemplatesContent);
+  </script>
+</body>
+</html>

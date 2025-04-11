@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drag &amp; Drop Builder</title>
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+  <script src="/shared/mock-api.js"></script>
+  <style>
+    .block-item { cursor: grab; }
+    .drop-zone { border: 2px dashed #ccc; min-height: 300px; padding: 1rem; }
+    .theme-modern * {
+      font-family: 'Helvetica Neue', sans-serif;
+      color: #1f2937;
+    }
+    .theme-elegant * {
+      font-family: 'Georgia', serif;
+      color: #4b5563;
+    }
+    .theme-bold * {
+      font-family: 'Arial Black', sans-serif;
+      color: #111827;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+  <div id="toolbar" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white border shadow rounded px-4 py-2 hidden gap-2 items-center">
+    <button onclick="execCmd('bold')" class="font-bold">B</button>
+    <button onclick="execCmd('italic')" class="italic">I</button>
+    <button onclick="execCmd('underline')" class="underline">U</button>
+    <input type="color" id="textColor" onchange="execCmdColor(this.value)">
+  </div>
+
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold">Page Builder <span id="role-indicator" class="text-sm text-gray-500"></span></h1>
+      <div class="flex items-center gap-2">
+        <label for="theme-picker" class="text-sm text-gray-600">Theme:</label>
+        <select id="theme-picker" onchange="applyTheme(this.value)" class="border px-2 py-1 rounded text-sm">
+          <option value="modern">Modern</option>
+          <option value="elegant">Elegant</option>
+          <option value="bold">Bold</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Block palette -->
+      <div>
+        <h2 class="font-semibold mb-2">Blocks</h2>
+        <div class="space-y-2">
+          <div class="block-item bg-white p-3 border rounded shadow" draggable="true" data-html="<section class='p-6 text-center bg-blue-600 text-white'><h2 contenteditable='true' class='text-2xl font-bold'>Hero Block</h2></section>">
+            Hero Block
+          </div>
+          <div class="block-item bg-white p-3 border rounded shadow" draggable="true" data-html="<section class='p-6'><form class='space-y-2'><input class='border w-full p-2 rounded' placeholder='Your email'/><button contenteditable='true' class='bg-blue-600 text-white px-4 py-2 rounded'>Join Now</button></form></section>">
+            Form Block
+          </div>
+          <div class="block-item bg-white p-3 border rounded shadow" draggable="true" data-html="<section class='p-6 bg-gray-100 text-center italic'>&quot;This app is awesome!&quot;</section>">
+            Testimonial Block
+          </div>
+        </div>
+      </div>
+
+      <!-- Builder area -->
+      <div class="md:col-span-2">
+        <h2 class="font-semibold mb-2">Your Page</h2>
+        <div id="drop-zone" class="drop-zone bg-white rounded shadow">
+          <span id="view-only" class="hidden text-sm text-gray-500 italic block mb-2">View only – drag-and-drop is disabled</span>
+        </div>
+        <div class="flex justify-end mt-4 gap-2">
+          <button onclick="createImageUploader()" class="text-sm bg-gray-200 px-3 py-1 rounded">Add Image</button>
+          <button onclick="clearBlocks()" class="text-red-600 text-sm hover:underline">Clear</button>
+          <button id="publish-btn" onclick="publishToWordPress()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Publish to WordPress</button>
+          <button onclick="downloadHTML()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download HTML</button>
+          <button id="save-btn" onclick="savePage()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Page</button>
+        </div>
+        <p id="status" class="mt-2 text-sm text-green-600"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const dropZone = document.getElementById('drop-zone');
+    let userRole = "";
+
+    document.querySelectorAll('.block-item').forEach(block => {
+      block.addEventListener('dragstart', (e) => {
+        if (userRole === 'viewer') {
+          e.preventDefault();
+          return false;
+        }
+        e.dataTransfer.setData('text/html', block.getAttribute('data-html'));
+      });
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      if (userRole === 'viewer') return;
+      e.preventDefault();
+      dropZone.style.backgroundColor = '#f0f9ff';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.backgroundColor = '';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      if (userRole === 'viewer') return;
+      e.preventDefault();
+      dropZone.style.backgroundColor = '';
+      const html = e.dataTransfer.getData('text/html');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative group border rounded p-1 mb-2';
+      wrapper.innerHTML = html;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '✕';
+      removeBtn.className = 'absolute top-0 right-0 m-1 text-xs text-red-500 hover:text-red-700 hidden group-hover:block';
+      removeBtn.onclick = () => wrapper.remove();
+      wrapper.appendChild(removeBtn);
+
+      wrapper.setAttribute('draggable', 'true');
+      wrapper.addEventListener('dragstart', (e) => {
+        if (userRole === 'viewer') {
+          e.preventDefault();
+          return false;
+        }
+        e.dataTransfer.setData('text/plain', '');
+        dropZone.dragging = wrapper;
+      });
+
+      dropZone.appendChild(wrapper);
+    });
+
+    function clearBlocks() {
+      dropZone.innerHTML = '';
+    }
+
+    async function savePage() {
+      const content = dropZone.innerHTML;
+      try {
+        const res = await fetch('http://localhost:3001/api/pages', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: 'Built with Drag & Drop',
+            content: content
+          })
+        });
+        const data = await res.json();
+        document.getElementById('status').textContent = 'Page saved! Edit here → /edit-page.html?id=' + data.id;
+      } catch (error) {
+        console.error('Error saving page:', error);
+        document.getElementById('status').textContent = 'Error saving page. Please try again.';
+      }
+    }
+
+    function createImageUploader() {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative border rounded p-2 mb-2 text-center';
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.className = 'mb-2';
+
+      const img = document.createElement('img');
+      img.className = 'mx-auto max-h-60 rounded shadow';
+      img.style.display = 'none';
+
+      input.onchange = () => {
+        const file = input.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            img.src = e.target.result;
+            img.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(img);
+      wrapper.setAttribute('draggable', 'true');
+      wrapper.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', '');
+        dropZone.dragging = wrapper;
+      });
+
+      dropZone.appendChild(wrapper);
+    }
+
+    function execCmd(cmd) {
+      document.execCommand(cmd, false, null);
+    }
+
+    function execCmdColor(color) {
+      document.execCommand("foreColor", false, color);
+    }
+
+    document.addEventListener("selectionchange", () => {
+      const selection = document.getSelection();
+      const toolbar = document.getElementById("toolbar");
+      if (selection && selection.rangeCount > 0 && selection.toString().length > 0) {
+        const rect = selection.getRangeAt(0).getBoundingClientRect();
+        toolbar.style.left = rect.left + rect.width / 2 + "px";
+        toolbar.style.top = rect.top + window.scrollY - 40 + "px";
+        toolbar.style.display = "flex";
+      } else {
+        toolbar.style.display = "none";
+      }
+    });
+
+    function downloadHTML() {
+      const content = dropZone.innerHTML;
+      const htmlBlob = new Blob(["<html><body>" + content + "</body></html>"], { type: "text/html" });
+      const url = URL.createObjectURL(htmlBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "launchpage-export.html";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function getSavedWPConfig() {
+      return {
+        wpUrl: localStorage.getItem("wpUrl") || "",
+        wpUser: localStorage.getItem("wpUser") || "",
+        wpPass: localStorage.getItem("wpPass") || ""
+      };
+    }
+
+    function saveWPConfig(url, user, pass) {
+      localStorage.setItem("wpUrl", url);
+      localStorage.setItem("wpUser", user);
+      localStorage.setItem("wpPass", pass);
+    }
+
+    async function publishToWordPress() {
+      // Get saved config
+      const savedConfig = getSavedWPConfig();
+      const savedUrl = savedConfig.wpUrl;
+      const savedUser = savedConfig.wpUser;
+      const savedPass = savedConfig.wpPass;
+      
+      // Prompt for information
+      const wpUrl = prompt("Enter WordPress site URL:", savedUrl);
+      const wpUser = prompt("Enter WordPress username:", savedUser);
+      const wpPass = prompt("Enter WordPress application password:", savedPass);
+      
+      // Validate input
+      if (!wpUrl || !wpUser || !wpPass) {
+        alert("Missing credentials");
+        return;
+      }
+      
+      // Save configuration
+      saveWPConfig(wpUrl, wpUser, wpPass);
+      
+      // Prepare data
+      const content = dropZone.innerHTML;
+      const auth = btoa(wpUser + ":" + wpPass);
+      
+      try {
+        // Make API request
+        const response = await fetch(wpUrl + "/wp-json/wp/v2/pages", {
+          method: "POST",
+          headers: {
+            "Authorization": "Basic " + auth,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title: "LaunchPage Builder Export",
+            content: content,
+            status: "draft"
+          })
+        });
+        
+        // Handle response
+        if (response.ok) {
+          const data = await response.json();
+          alert("Saved as draft: " + data.link);
+          window.open(data.link, "_blank");
+        } else {
+          const errorText = await response.text();
+          alert("Failed to publish. Check credentials and CORS settings.\n\n" + errorText);
+        }
+      } catch (error) {
+        alert("Failed to connect to WordPress site. Check the URL and try again.");
+        console.error(error);
+      }
+    }
+
+    async function getUserRole() {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch("http://localhost:3001/api/me", {
+          headers: { 
+            "Authorization": "Bearer " + token 
+          }
+        });
+
+        if (!res.ok) return;
+
+        const user = await res.json();
+        userRole = user.role;
+
+        if (!['editor', 'admin'].includes(userRole)) {
+          const saveBtn = document.getElementById("save-btn");
+          if (saveBtn) saveBtn.remove();
+          
+          const publishBtn = document.getElementById("publish-btn");
+          if (publishBtn) publishBtn.remove();
+        }
+
+        if (userRole !== 'admin') {
+          const deleteBtn = document.getElementById("delete-btn");
+          if (deleteBtn) deleteBtn.remove();
+        }
+
+        const viewNotice = document.getElementById("view-only");
+        if (userRole === "viewer" && viewNotice) {
+          viewNotice.classList.remove("hidden");
+        }
+
+        const roleIndicator = document.getElementById("role-indicator");
+        if (roleIndicator) {
+          roleIndicator.textContent = "(Role: " + userRole + ")";
+        }
+      } catch (err) {
+        console.error("Error fetching user role:", err);
+      }
+    }
+
+    function applyTheme(theme) {
+      const root = document.getElementById("drop-zone");
+      root.classList.remove("theme-modern", "theme-elegant", "theme-bold");
+      root.classList.add("theme-" + theme);
+    }
+
+    // Initialize
+    getUserRole();
+  </script>
+</body>
+</html>

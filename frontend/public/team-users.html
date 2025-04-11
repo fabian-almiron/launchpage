@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team Members | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/mock-api.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    async function renderTeamUsersContent(container, user) {
+      // Remove loading indicator safely
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      // Create actions section
+      const actionsSection = document.createElement('div');
+      actionsSection.className = 'mb-6 flex justify-between items-center';
+      actionsSection.innerHTML = `
+        <div class="flex items-center">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <input id="search-input" type="text" class="input pl-10 w-60" placeholder="Search team members...">
+          </div>
+        </div>
+        <div>
+          <button id="invite-btn" class="btn-primary btn-effect flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+            </svg>
+            Invite User
+          </button>
+        </div>
+      `;
+      container.appendChild(actionsSection);
+      
+      // Create team members table
+      const tableSection = document.createElement('div');
+      tableSection.className = 'card overflow-hidden';
+      tableSection.innerHTML = `
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="user-table" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                  <div class="animate-pulse flex space-x-4 justify-center">
+                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
+                    <div class="flex-1 space-y-2 py-1 max-w-md">
+                      <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.appendChild(tableSection);
+      
+      // Add empty state for no team members
+      const emptyStateDiv = document.createElement('div');
+      emptyStateDiv.className = 'hidden text-center py-16';
+      emptyStateDiv.id = 'empty-state';
+      emptyStateDiv.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900">No team members found</h3>
+        <p class="text-gray-500 mt-1">Invite team members to collaborate.</p>
+        <button id="empty-invite-btn" class="mt-4 btn-primary btn-effect">Invite Team Members</button>
+      `;
+      container.appendChild(emptyStateDiv);
+      
+      // Create invite modal
+      const modalDiv = document.createElement('div');
+      modalDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+      modalDiv.id = 'invite-modal';
+      modalDiv.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+          <div class="bg-indigo-600 px-6 py-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium text-white">Invite Team Members</h3>
+              <button id="close-modal-btn" class="text-white hover:text-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="p-6">
+            <form id="invite-form">
+              <div class="mb-4">
+                <label for="invite-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="invite-email" class="input" placeholder="colleague@example.com" required>
+              </div>
+              <div class="mb-6">
+                <label for="invite-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select id="invite-role" class="input">
+                  <option value="admin">Admin</option>
+                  <option value="member" selected>Member</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">
+                  <strong>Admin:</strong> Full access to all settings
+                  <br>
+                  <strong>Member:</strong> Can edit pages but not team settings
+                  <br>
+                  <strong>Viewer:</strong> Can only view pages, not edit
+                </p>
+              </div>
+              <div class="flex justify-end">
+                <button type="button" id="cancel-invite-btn" class="btn-secondary mr-2">Cancel</button>
+                <button type="submit" class="btn-primary">Send Invitation</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      container.appendChild(modalDiv);
+      
+      // Set up event listeners
+      document.getElementById('invite-btn').addEventListener('click', showInviteModal);
+      document.getElementById('empty-invite-btn').addEventListener('click', showInviteModal);
+      document.getElementById('close-modal-btn').addEventListener('click', hideInviteModal);
+      document.getElementById('cancel-invite-btn').addEventListener('click', hideInviteModal);
+      document.getElementById('invite-form').addEventListener('submit', handleInvite);
+      document.getElementById('search-input').addEventListener('input', filterUsers);
+      
+      // Fetch and render team members
+      await fetchTeamUsers();
+    }
+    
+    // Global variable to store all team members
+    let allTeamMembers = [];
+    
+    function showInviteModal() {
+      document.getElementById('invite-modal').classList.remove('hidden');
+      document.getElementById('invite-email').focus();
+    }
+    
+    function hideInviteModal() {
+      document.getElementById('invite-modal').classList.add('hidden');
+    }
+    
+    async function fetchTeamUsers() {
+      const token = localStorage.getItem('token');
+      
+      try {
+        // This is a placeholder for demo - in reality we'd use the actual team ID
+        const teamId = '1'; 
+        
+        // For demo purposes, we'll create some fake users
+        // In a real app, this would fetch from the API
+        /*
+        const res = await fetch(`http://localhost:3001/api/teams/${teamId}/users`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const users = await res.json();
+        */
+        
+        // Demo data
+        allTeamMembers = [
+          { id: 1, name: 'Jane Smith', email: 'admin@example.com', role: 'admin', lastLoginAt: new Date() },
+          { id: 2, name: 'John Doe', email: 'member@example.com', role: 'member', lastLoginAt: new Date(Date.now() - 86400000) },
+          { id: 3, name: 'Bob Johnson', email: 'viewer@example.com', role: 'viewer', lastLoginAt: null }
+        ];
+        
+        renderUserTable(allTeamMembers);
+      } catch (error) {
+        console.error('Error fetching team users:', error);
+        renderUserTable([]);
+      }
+    }
+    
+    function renderUserTable(users) {
+      const tbody = document.getElementById('user-table');
+      const emptyState = document.getElementById('empty-state');
+      
+      tbody.innerHTML = '';
+      
+      if (users.length === 0) {
+        emptyState.classList.remove('hidden');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+              No team members found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        // Create user cell with avatar and name/email
+        const userCell = document.createElement('td');
+        userCell.className = 'px-6 py-4 whitespace-nowrap';
+        userCell.innerHTML = `
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+              ${user.name ? user.name.charAt(0) : user.email.charAt(0).toUpperCase()}
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900">${user.name || 'User'}</div>
+              <div class="text-sm text-gray-500">${user.email}</div>
+            </div>
+          </div>
+        `;
+        row.appendChild(userCell);
+        
+        // Role cell with badge
+        const roleCell = document.createElement('td');
+        roleCell.className = 'px-6 py-4 whitespace-nowrap';
+        
+        let roleBadgeClass = '';
+        switch(user.role) {
+          case 'admin':
+            roleBadgeClass = 'bg-purple-100 text-purple-800';
+            break;
+          case 'member':
+            roleBadgeClass = 'bg-blue-100 text-blue-800';
+            break;
+          case 'viewer':
+            roleBadgeClass = 'bg-gray-100 text-gray-800';
+            break;
+        }
+        
+        roleCell.innerHTML = `
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleBadgeClass}">
+            ${user.role}
+          </span>
+        `;
+        row.appendChild(roleCell);
+        
+        // Last active cell
+        const lastActiveCell = document.createElement('td');
+        lastActiveCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+        lastActiveCell.textContent = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never';
+        row.appendChild(lastActiveCell);
+        
+        // Actions cell with role selector and remove button
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'px-6 py-4 whitespace-nowrap text-right text-sm font-medium';
+        
+        // Create role selector
+        const roleSelector = document.createElement('select');
+        roleSelector.className = 'mr-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm';
+        
+        ['admin', 'member', 'viewer'].forEach(role => {
+          const option = document.createElement('option');
+          option.value = role;
+          option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+          if (role === user.role) option.selected = true;
+          roleSelector.appendChild(option);
+        });
+        
+        roleSelector.addEventListener('change', () => updateUserRole(user.id, roleSelector.value));
+        
+        // Create remove button
+        const removeButton = document.createElement('button');
+        removeButton.className = 'text-red-600 hover:text-red-900';
+        removeButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        `;
+        removeButton.addEventListener('click', () => removeUser(user.id));
+        
+        actionsCell.appendChild(roleSelector);
+        actionsCell.appendChild(removeButton);
+        row.appendChild(actionsCell);
+        
+        tbody.appendChild(row);
+      });
+    }
+    
+    function filterUsers(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredUsers = allTeamMembers.filter(user => 
+        user.name?.toLowerCase().includes(searchTerm) || 
+        user.email.toLowerCase().includes(searchTerm) ||
+        user.role.toLowerCase().includes(searchTerm)
+      );
+      renderUserTable(filteredUsers);
+    }
+    
+    async function updateUserRole(userId, newRole) {
+      const token = localStorage.getItem('token');
+      
+      try {
+        // In a real app, this would call the API
+        // Update the local data for demo
+        allTeamMembers = allTeamMembers.map(user => {
+          if (user.id === userId) {
+            return { ...user, role: newRole };
+          }
+          return user;
+        });
+        
+        alert(`User role updated to ${newRole}`);
+      } catch (error) {
+        console.error('Error updating user role:', error);
+        alert('Failed to update user role');
+      }
+    }
+    
+    async function removeUser(userId) {
+      if (!confirm('Are you sure you want to remove this user from the team?')) {
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        // In a real app, this would call the API
+        // Update the local data for demo
+        allTeamMembers = allTeamMembers.filter(user => user.id !== userId);
+        renderUserTable(allTeamMembers);
+        
+        alert('User removed from team');
+      } catch (error) {
+        console.error('Error removing user:', error);
+        alert('Failed to remove user');
+      }
+    }
+    
+    async function handleInvite(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('invite-email').value;
+      const role = document.getElementById('invite-role').value;
+      
+      if (!email) return;
+      
+      try {
+        // In a real app, this would call the API
+        // For demo, just add to the local array
+        const newUser = {
+          id: Date.now(), // random ID for demo
+          email: email,
+          role: role,
+          lastLoginAt: null
+        };
+        
+        allTeamMembers.push(newUser);
+        renderUserTable(allTeamMembers);
+        
+        hideInviteModal();
+        document.getElementById('invite-form').reset();
+        
+        alert(`Invitation sent to ${email}`);
+      } catch (error) {
+        console.error('Error sending invitation:', error);
+        alert('Failed to send invitation');
+      }
+    }
+    
+    // Initialize the team users view
+    setupDashboard('team-users', 'Team Members', renderTeamUsersContent);
+  </script>
+</body>
+</html>

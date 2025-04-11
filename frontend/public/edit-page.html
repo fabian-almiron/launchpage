@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+  <script src="/shared/mock-api.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Loading indicator -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Content will be rendered by layout.js -->
+
+  <script src="/shared/layout.js"></script>
+  <script>
+    // Initialize variables at the top level
+    const token = localStorage.getItem("token");
+    const pageId = new URLSearchParams(window.location.search).get("id");
+    let autosaveTimer;
+    let lastSavedContent = "";
+    
+    // Define the page render function
+    async function renderEditPageContent(container, user) {
+      // Create the edit form section
+      const editSection = document.createElement('div');
+      editSection.innerHTML = `
+        <input id="title" class="w-full px-4 py-2 border rounded mb-4" placeholder="Page Title"/>
+        <textarea id="content" class="w-full px-4 py-2 border rounded mb-4" rows="10" placeholder="Page Content (HTML allowed)"></textarea>
+
+        <div class="flex gap-4">
+          <button onclick="toggleVersionSidebar()" class="bg-gray-300 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-400">Show Versions</button>
+          <button onclick="savePage()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save</button>
+          <button onclick="deletePage()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Delete</button>
+          <a id="preview-link" href="#" target="_blank" class="ml-auto text-blue-600 hover:underline">Preview</a>
+        </div>
+        <p id="status" class="text-sm mt-2 text-green-600"></p>
+      `;
+      container.appendChild(editSection);
+      
+      // Create version sidebar
+      const versionSidebar = document.createElement('div');
+      versionSidebar.className = 'fixed right-0 top-0 h-full w-72 bg-white border-l shadow-lg p-4 overflow-y-auto hidden';
+      versionSidebar.id = "version-sidebar";
+      versionSidebar.innerHTML = `
+        <h3 class="text-lg font-semibold mb-4">Version History</h3>
+        <ul id="version-list" class="space-y-2 text-sm"></ul>
+      `;
+      document.body.appendChild(versionSidebar);
+      
+      // Initialize page content
+      await initPage();
+    }
+    
+    async function initPage() {
+      try {
+        if (pageId) {
+          await loadPage();
+        } else {
+          // New page, set defaults
+          document.getElementById("title").value = "Untitled Page";
+          document.getElementById("content").value = "";
+          document.title = "New Page | LaunchPage";
+        }
+        
+        // Set up autosave after loading content
+        lastSavedContent = document.getElementById("content").value;
+        setupAutosave();
+        
+      } catch (error) {
+        console.error("Error initializing page:", error);
+        document.getElementById("status").textContent = "Error loading page. Please try again.";
+      }
+    }
+
+    async function loadPage() {
+      try {
+        // For the mock API, find the page in the mockDB
+        const res = await fetch("http://localhost:3001/api/pages/" + pageId, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          // If page not found in the mock API, create local data
+          // This simulates finding the page when using the mock API
+          document.getElementById("title").value = "Untitled Page";
+          document.getElementById("content").value = "<p>This is your new page content.</p>";
+          document.getElementById("preview-link").href = "/preview.html?id=" + pageId;
+          document.title = "Untitled Page | LaunchPage";
+          return;
+        }
+        
+        const page = await res.json();
+        document.getElementById("title").value = page.title || "";
+        document.getElementById("content").value = page.content || "";
+        document.getElementById("preview-link").href = "/preview.html?id=" + page.id;
+        document.title = page.title + " | LaunchPage";
+      } catch (error) {
+        console.error("Error loading page:", error);
+        // If there's an error, show mock data
+        document.getElementById("title").value = "Mock Page";
+        document.getElementById("content").value = "<p>This is a mock page for demonstration purposes.</p>";
+      }
+    }
+
+    async function savePage(silent = false) {
+      try {
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+        
+        // Update the URL if it's a new page
+        const method = pageId ? "PUT" : "POST";
+        const endpoint = pageId 
+          ? "http://localhost:3001/api/pages/" + pageId 
+          : "http://localhost:3001/api/pages";
+          
+        const res = await fetch(endpoint, {
+          method: method,
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ title, content })
+        });
+        
+        if (!res.ok) {
+          throw new Error("Failed to save page");
+        }
+        
+        const data = await res.json();
+        
+        // If it's a new page, update the URL
+        if (!pageId && data.id) {
+          window.history.replaceState({}, "", "/edit-page.html?id=" + data.id);
+        }
+        
+        if (!silent) {
+          document.getElementById("status").textContent = "Page saved successfully.";
+          // Clear status message after 3 seconds
+          setTimeout(() => {
+            document.getElementById("status").textContent = "";
+          }, 3000);
+        } else {
+          document.getElementById("status").textContent = "Autosaved at " + new Date().toLocaleTimeString();
+        }
+        
+        // Update the last saved content
+        lastSavedContent = content;
+      } catch (error) {
+        console.error("Error saving page:", error);
+        document.getElementById("status").textContent = "Error saving page. Please try again.";
+      }
+    }
+
+    async function deletePage() {
+      if (!confirm("Are you sure you want to delete this page? This action cannot be undone.")) {
+        return;
+      }
+      
+      try {
+        if (!pageId) {
+          // New unsaved page, just go back
+          window.location.href = "/pages.html";
+          return;
+        }
+        
+        const res = await fetch("http://localhost:3001/api/pages/" + pageId, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token }
+        });
+        
+        if (res.ok) {
+          window.location.href = "/pages.html";
+        } else {
+          throw new Error("Failed to delete page");
+        }
+      } catch (error) {
+        console.error("Error deleting page:", error);
+        // For demo, just redirect anyway
+        window.location.href = "/pages.html";
+      }
+    }
+
+    function toggleVersionSidebar() {
+      const sidebar = document.getElementById("version-sidebar");
+      sidebar.classList.toggle("hidden");
+
+      if (!sidebar.classList.contains("hidden")) {
+        // Show mock version history
+        const list = document.getElementById("version-list");
+        list.innerHTML = "";
+
+        // Generate mock versions
+        const mockVersions = [
+          { id: 'v1', createdAt: Date.now() - 24 * 60 * 60 * 1000 },
+          { id: 'v2', createdAt: Date.now() - 2 * 60 * 60 * 1000 },
+          { id: 'v3', createdAt: Date.now() - 30 * 60 * 1000 }
+        ];
+
+        mockVersions.forEach(v => {
+          const li = document.createElement("li");
+          const timestamp = new Date(v.createdAt).toLocaleString();
+          li.innerHTML = `
+            <div class='flex items-center justify-between'>
+              <span class='text-gray-700'>${timestamp}</span>
+              <button class='text-blue-600 hover:underline' onclick='restoreVersion("${v.id}")'>Restore</button>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+      }
+    }
+
+    function restoreVersion(versionId) {
+      const confirmed = confirm("Restore this version? It will overwrite your current content.");
+      if (!confirmed) return;
+
+      // Mock version restore (just show a message)
+      document.getElementById("status").textContent = "Restored version " + versionId;
+      
+      // In a real app, we would fetch the version content from the API
+      // For demo, we'll just change the content slightly
+      const currentContent = document.getElementById("content").value;
+      document.getElementById("content").value = currentContent + "\n\n<p>Content from version " + versionId + "</p>";
+    }
+
+    function setupAutosave() {
+      // Clear any existing timer
+      if (autosaveTimer) {
+        clearInterval(autosaveTimer);
+      }
+      
+      // Set up a new timer
+      autosaveTimer = setInterval(() => {
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+        if (content !== lastSavedContent) {
+          savePage(true);
+        }
+      }, 15000); // Autosave every 15 seconds
+    }
+    
+    // Initialize the page using the shared layout
+    setupDashboard('pages', 'Edit Page', renderEditPageContent);
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Preview Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+  <script src="/shared/mock-api.js"></script>
+  <style>
+    .preview-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-radius: 0.5rem;
+    }
+    .preview-content img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans min-h-screen py-12">
+  <!-- Loading indicator -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div class="container mx-auto px-4">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Page Preview</h1>
+      <div class="flex space-x-4">
+        <a href="#" id="edit-link" class="text-blue-600 hover:underline">Edit Page</a>
+        <a href="/pages.html" class="text-blue-600 hover:underline">Back to Pages</a>
+      </div>
+    </div>
+    
+    <div class="preview-wrapper">
+      <h1 id="page-title" class="text-3xl font-bold mb-6">Loading...</h1>
+      <div id="page-content" class="preview-content prose max-w-none">
+        <p>Loading content...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Remove loading spinner
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      // Get page ID from URL
+      const pageId = new URLSearchParams(window.location.search).get("id");
+      
+      if (pageId) {
+        // Set edit link
+        document.getElementById('edit-link').href = `/edit-page.html?id=${pageId}`;
+        
+        // Load page content
+        loadPageContent(pageId);
+      } else {
+        // No page ID provided
+        document.getElementById('page-title').textContent = 'No Page Selected';
+        document.getElementById('page-content').innerHTML = '<p>No page ID was provided in the URL.</p>';
+      }
+    });
+    
+    async function loadPageContent(pageId) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:3001/api/pages/${pageId}`, {
+          headers: { 
+            'Authorization': 'Bearer ' + token 
+          }
+        });
+        
+        if (!res.ok) {
+          // Mock data for preview if page not found
+          document.getElementById('page-title').textContent = 'Sample Page';
+          document.getElementById('page-content').innerHTML = `
+            <p>This is a sample page preview. In a real application, this would display the actual content of the page with ID: ${pageId}.</p>
+            <h2>Sample Heading</h2>
+            <p>This is some sample content to demonstrate how the preview would look.</p>
+          `;
+          document.title = 'Sample Page | Preview';
+          return;
+        }
+        
+        const page = await res.json();
+        
+        // Update page title and content
+        document.getElementById('page-title').textContent = page.title || 'Untitled Page';
+        document.getElementById('page-content').innerHTML = page.content || '<p>No content</p>';
+        document.title = (page.title || 'Untitled Page') + ' | Preview';
+        
+      } catch (error) {
+        console.error('Error loading page content:', error);
+        
+        // Show error message
+        document.getElementById('page-title').textContent = 'Error';
+        document.getElementById('page-content').innerHTML = '<p>There was an error loading the page content. Please try again later.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

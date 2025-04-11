@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  users     User[]
+  pages     Page[]
+  invites   TeamInvite[]
+  inviteTokens InviteToken[]
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  plan              String   @default("free")
+  role              String   @default("member")
+  stripeCustomerId  String?  @unique
+  teamId            String?
+  team              Team?    @relation(fields: [teamId], references: [id])
+  createdAt         DateTime @default(now())
+  lastLoginAt      DateTime?
+  pages             Page[]
+}
+
+model Page {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  teamId    String?
+  team      Team?    @relation(fields: [teamId], references: [id])
+  createdAt DateTime @default(now())
+  versions  PageVersion[]
+}
+
+model TeamInvite {
+  id        String   @id @default(uuid())
+  email     String
+  status    String   @default("pending")
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model InviteToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  teamId    String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id])
+}
+
+
+model PageVersion {
+  id        String   @id @default(uuid())
+  page      Page     @relation(fields: [pageId], references: [id])
+  pageId    String
+  content   String
+  createdAt DateTime @default(now())
+}

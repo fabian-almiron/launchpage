@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Login</title>
+  <link href="/dist/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded shadow max-w-md w-full text-center">
+    <h1 class="text-xl font-bold mb-4">Logging you in...</h1>
+    <p id="status">Please wait</p>
+    <button id="resend-btn" onclick="resendInvite()" class="hidden mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      Resend Invite
+    </button>
+  </div>
+
+  <script>
+    async function loginWithToken() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      const email = params.get("email");
+
+      if (!token || !email) {
+        document.getElementById("status").textContent = "Invalid invite link.";
+        return;
+      }
+
+      const res = await fetch('http://localhost:3001/api/auth/magic-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        window.location.href = '/dashboard.html';
+      } else {
+        document.getElementById("status").textContent = data.error || 'Login failed.';
+        document.getElementById("resend-btn").classList.remove("hidden");
+      }
+    }
+
+    async function resendInvite() {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get("email");
+      if (!email) return;
+
+      const res = await fetch('http://localhost:3001/api/auth/resend-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      document.getElementById("status").textContent = data.message || data.error || 'Could not resend invite.';
+      document.getElementById("resend-btn").classList.add("hidden");
+    }
+
+    loginWithToken();
+  </script>
+</body>
+</html>

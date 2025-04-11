@@ -1,0 +1,40 @@
+{
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.9",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.3.3",
+    "serve": "^14.2.1"
+  },
+  "name": "launchpage-builder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "launchpage-install": "./install.js"
+  },
+  "scripts": {
+    "start": "serve -s frontend/public",
+    "build": "tailwindcss -i frontend/src/styles.css -o frontend/public/dist/output.css --minify",
+    "dev": "serve frontend/public & tailwindcss -i frontend/src/styles.css -o frontend/public/dist/output.css --watch",
+    "package": "npm run build && mkdir -p dist && zip -r dist/launchpage-builder.zip frontend package.json README.md LICENSE install.js",
+    "postinstall": "node install.js"
+  },
+  "keywords": [
+    "website",
+    "builder",
+    "drag-and-drop",
+    "publishing",
+    "themes"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "A modern drag-and-drop website builder with themes and publishing options",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/launchpage-builder"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

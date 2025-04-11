@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team Settings | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Content will be populated by JavaScript -->
+  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script src="/shared/mock-api.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    async function renderTeamSettingsContent(container, user) {
+      // Remove loading indicator safely
+      const loadingElement = document.getElementById('loading');
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      // Create team profile card
+      const profileSection = document.createElement('div');
+      profileSection.className = 'mb-8';
+      profileSection.innerHTML = `
+        <h2 class="text-lg font-medium mb-4">Team Profile</h2>
+        <div class="card">
+          <form id="team-form" class="space-y-6">
+            <div>
+              <label for="team-name" class="block text-sm font-medium text-gray-700">Team Name</label>
+              <input type="text" id="team-name" name="name" class="input mt-1" placeholder="Your team name">
+            </div>
+            
+            <div>
+              <label for="team-domain" class="block text-sm font-medium text-gray-700">Custom Domain</label>
+              <div class="mt-1 flex rounded-md shadow-sm">
+                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                  https://
+                </span>
+                <input type="text" id="team-domain" name="domain" class="input rounded-none rounded-r-md" placeholder="yourcompany.com">
+              </div>
+              <p class="mt-1 text-sm text-gray-500">
+                Only available on Pro and Agency plans.
+              </p>
+            </div>
+            
+            <div>
+              <button type="submit" class="btn-primary">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      container.appendChild(profileSection);
+      
+      // Create team API settings
+      const apiSection = document.createElement('div');
+      apiSection.className = 'mb-8';
+      apiSection.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-medium">API Keys</h2>
+          <button id="create-api-key-btn" class="btn-secondary text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Create API Key
+          </button>
+        </div>
+        <div class="card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="api-keys-list">
+                <tr>
+                  <td colspan="4" class="px-6 py-4 text-sm text-gray-500 text-center">
+                    No API keys found. Create one to get started.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      container.appendChild(apiSection);
+      
+      // Create danger zone section
+      const dangerSection = document.createElement('div');
+      dangerSection.innerHTML = `
+        <h2 class="text-lg font-medium mb-4">Danger Zone</h2>
+        <div class="card border-red-200 bg-red-50">
+          <h3 class="text-base font-medium text-red-800 mb-2">Delete Team</h3>
+          <p class="text-sm text-red-600 mb-4">
+            Once you delete your team, there is no going back. Please be certain.
+          </p>
+          <button id="delete-team-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">
+            Delete Team
+          </button>
+        </div>
+      `;
+      container.appendChild(dangerSection);
+      
+      // Add event listeners
+      document.getElementById('team-form').addEventListener('submit', handleTeamFormSubmit);
+      document.getElementById('create-api-key-btn').addEventListener('click', createApiKey);
+      document.getElementById('delete-team-btn').addEventListener('click', confirmDeleteTeam);
+      
+      // Load team data
+      await loadTeamData();
+    }
+    
+    async function loadTeamData() {
+      const token = localStorage.getItem('token');
+      try {
+        // This is a placeholder - would need a proper API endpoint for team data
+        const res = await fetch('http://localhost:3001/api/protected', {
+          headers: {
+            Authorization: 'Bearer ' + token
+          }
+        });
+        
+        if (res.ok) {
+          const userData = await res.json();
+          
+          // Fill in the form with sample data
+          document.getElementById('team-name').value = userData.team || 'My Team';
+          
+          // In a real app, you would get this from the team API response
+          if (userData.plan === 'pro' || userData.plan === 'agency') {
+            document.getElementById('team-domain').disabled = false;
+            document.getElementById('team-domain').value = 'mycompany.com';
+          } else {
+            document.getElementById('team-domain').disabled = true;
+            document.getElementById('team-domain').value = '';
+            document.getElementById('team-domain').placeholder = 'Upgrade to Pro or Agency to enable custom domains';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading team data:', error);
+      }
+    }
+    
+    async function handleTeamFormSubmit(e) {
+      e.preventDefault();
+      
+      // Show a success message (in a real app, we would actually save this data)
+      alert('Team settings saved successfully!');
+    }
+    
+    async function createApiKey() {
+      const name = prompt('Enter a name for this API key:');
+      if (!name) return;
+      
+      // In a real app, this would call an API to create a new key
+      alert(`API key created: ${name}-${Math.random().toString(36).substring(2, 15)}`);
+      
+      // Reload API keys
+      // loadApiKeys();
+    }
+    
+    function confirmDeleteTeam() {
+      const confirm = window.confirm('Are you sure you want to delete your team? This action cannot be undone.');
+      
+      if (confirm) {
+        // In a real app, this would call an API to delete the team
+        alert('Team deleted successfully.');
+        window.location.href = '/login.html';
+      }
+    }
+    
+    // Initialize the team settings view
+    setupDashboard('team', 'Team Settings', renderTeamSettingsContent);
+  </script>
+</body>
+</html>

@@ -1,30 +1,37 @@
-# Dockerfile for LaunchPage Builder
-FROM node:18
+# Dockerfile for LaunchPage Builder Frontend
+FROM nginx:alpine
 
-# Set working directory
-WORKDIR /app
+WORKDIR /usr/share/nginx/html
 
-# Copy package.json and related files
-COPY package*.json ./
-COPY tailwind.config.js ./
-COPY install.js ./
-COPY LICENSE ./
-COPY README.md ./
+# Copy frontend files
+COPY frontend/public .
 
-# Install dependencies with specific flags to avoid loops and increase verbosity
-RUN npm install --no-fund --no-audit --verbose --loglevel=info
+# Create a configuration to handle SPA routing
+RUN echo 'server { \
+    listen       80; \
+    server_name  localhost; \
+    location / { \
+        root   /usr/share/nginx/html; \
+        index  index.html; \
+        try_files $uri $uri/ /index.html; \
+        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
+        add_header Pragma "no-cache"; \
+        add_header Expires "0"; \
+    } \
+    location /api/ { \
+        proxy_pass http://backend:3001/; \
+        proxy_http_version 1.1; \
+        proxy_set_header Upgrade $http_upgrade; \
+        proxy_set_header Connection "upgrade"; \
+        proxy_set_header Host $host; \
+        proxy_cache_bypass $http_upgrade; \
+    } \
+    error_page   500 502 503 504  /50x.html; \
+    location = /50x.html { \
+        root   /usr/share/nginx/html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
-# Copy frontend directory
-COPY frontend /app/frontend
+EXPOSE 80
 
-# Make sure the dist directory exists
-RUN mkdir -p /app/frontend/public/dist
-
-# Build CSS with Tailwind
-RUN npm run build
-
-# Expose port 3000
-EXPOSE 3000
-
-# Start the application
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

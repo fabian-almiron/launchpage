@@ -1,257 +1,212 @@
-// Mock API service for demonstration purposes
-(function(window) {
-  // Mock data storage
-  const mockDB = {
-    user: {
-      id: 'user-123',
-      name: 'Demo User',
+/**
+ * Mock API for development and preview functionality
+ * This simulates backend API calls for the preview page
+ */
+
+// Mock data store
+const mockData = {
+  pages: [
+    {
+      id: 'page1',
+      title: 'Homepage',
+      content: '<h1>Welcome to Our Website</h1><p>This is a sample homepage created with LaunchPage builder.</p>',
+      createdAt: '2023-05-15T12:00:00Z'
+    },
+    {
+      id: 'page2',
+      title: 'About Us',
+      content: '<h1>About Our Company</h1><p>We are a team of dedicated professionals working to help you build amazing landing pages.</p>',
+      createdAt: '2023-05-16T14:30:00Z'
+    },
+    {
+      id: 'page3',
+      title: 'Services',
+      content: '<h1>Our Services</h1><ul><li>Web Development</li><li>Design</li><li>Marketing</li></ul>',
+      createdAt: '2023-05-17T09:45:00Z'
+    }
+  ],
+  domains: [
+    {
+      id: 'domain1',
+      domain: 'example.com',
+      pageId: 'page1',
+      status: 'live',
+      recordType: 'A'
+    },
+    {
+      id: 'domain2',
+      domain: 'about.example.com',
+      pageId: 'page2',
+      status: 'pending',
+      recordType: 'CNAME'
+    }
+  ],
+  users: [
+    {
+      id: 'user1',
       email: 'demo@example.com',
-      role: 'admin',
-      plan: 'Pro'
+      password: 'demo',
+      name: 'Demo User'
     },
-    pages: [
-      { id: 'page-1', title: 'Landing Page', content: '<h1>Welcome to our landing page</h1>', updatedAt: Date.now() - 24 * 60 * 60 * 1000 },
-      { id: 'page-2', title: 'About Us', content: '<h1>About our company</h1>', updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
-      { id: 'page-3', title: 'Services', content: '<h1>Our services</h1>', updatedAt: Date.now() - 5 * 24 * 60 * 60 * 1000 }
-    ],
-    templates: [
-      { id: 'tpl-1', name: 'Business', category: 'professional', thumbnail: '/assets/template-business.jpg' },
-      { id: 'tpl-2', name: 'Portfolio', category: 'creative', thumbnail: '/assets/template-portfolio.jpg' },
-      { id: 'tpl-3', name: 'E-commerce', category: 'shop', thumbnail: '/assets/template-shop.jpg' }
-    ],
-    team: {
-      id: 'team-1',
-      name: 'Demo Team',
-      members: [
-        { id: 'user-123', name: 'Demo User', email: 'demo@example.com', role: 'admin' },
-        { id: 'user-456', name: 'Jane Smith', email: 'jane@example.com', role: 'editor' },
-        { id: 'user-789', name: 'Bob Johnson', email: 'bob@example.com', role: 'viewer' }
-      ]
+    {
+      id: 'user2',
+      email: 'fabian.e.almiron@gmail.com',
+      password: 'password',
+      name: 'Fabian Almiron'
     }
-  };
+  ]
+};
 
-  // Helper to simulate API delay
-  function delay(ms = 500) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
+// Initialize mockAPI object if it doesn't exist
+window.mockAPI = window.mockAPI || {};
 
-  // Auto-login function - sets a valid token in localStorage
-  function autoLogin() {
-    const token = 'mock-jwt-token';
-    localStorage.setItem('token', token);
-    console.log('Mock API: Auto-login completed, token set');
-    return token;
-  }
-
-  // Intercept fetch requests to localhost:3001
-  const originalFetch = window.fetch;
-  window.fetch = function(url, options = {}) {
-    // Only intercept localhost:3001 API requests
-    if (typeof url === 'string' && url.includes('localhost:3001/api')) {
-      return handleMockRequest(url, options);
-    }
-    // Pass through all other requests to the original fetch
-    return originalFetch.apply(this, arguments);
-  };
-
-  // Handle mock API requests
-  async function handleMockRequest(url, options = {}) {
-    await delay();
-    
-    // Check for valid token in protected routes
-    const token = options.headers?.Authorization?.replace('Bearer ', '') || 
-                  localStorage.getItem('token');
-                  
-    if (!token && !url.includes('/api/login')) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Handle different API endpoints
-    try {
-      // Check if it's a single page request like /api/pages/page-123
-      const singlePageMatch = url.match(/\/api\/pages\/(page-\d+)/);
-      const pageId = singlePageMatch ? singlePageMatch[1] : null;
-      
-      if (url.includes('/api/pages')) {
-        if (options.method === 'GET') {
-          if (pageId) {
-            // Handle GET for a single page
-            const page = mockDB.pages.find(p => p.id === pageId);
-            if (page) {
-              return new Response(
-                JSON.stringify(page),
-                { status: 200, headers: { 'Content-Type': 'application/json' } }
-              );
-            } else {
-              return new Response(
-                JSON.stringify({ error: 'Page not found' }),
-                { status: 404, headers: { 'Content-Type': 'application/json' } }
-              );
-            }
-          } else {
-            // Handle GET for all pages
-            return new Response(
-              JSON.stringify(mockDB.pages),
-              { status: 200, headers: { 'Content-Type': 'application/json' } }
-            );
-          }
-        } else if (options.method === 'POST') {
-          // Create a new page
-          const pageData = JSON.parse(options.body);
-          const newPage = {
-            id: 'page-' + Date.now(),
-            updatedAt: Date.now(),
-            ...pageData
-          };
-          mockDB.pages.unshift(newPage);
-          return new Response(
-            JSON.stringify(newPage),
-            { status: 201, headers: { 'Content-Type': 'application/json' } }
-          );
-        } else if (options.method === 'PUT' && pageId) {
-          // Update an existing page
-          const pageData = JSON.parse(options.body);
-          const pageIndex = mockDB.pages.findIndex(p => p.id === pageId);
-          
-          if (pageIndex !== -1) {
-            // Update the page
-            mockDB.pages[pageIndex] = {
-              ...mockDB.pages[pageIndex],
-              ...pageData,
-              updatedAt: Date.now()
-            };
-            
-            return new Response(
-              JSON.stringify(mockDB.pages[pageIndex]),
-              { status: 200, headers: { 'Content-Type': 'application/json' } }
-            );
-          } else {
-            return new Response(
-              JSON.stringify({ error: 'Page not found' }),
-              { status: 404, headers: { 'Content-Type': 'application/json' } }
-            );
-          }
-        } else if (options.method === 'DELETE' && pageId) {
-          // Delete a page
-          const pageIndex = mockDB.pages.findIndex(p => p.id === pageId);
-          
-          if (pageIndex !== -1) {
-            // Remove the page from the array
-            mockDB.pages.splice(pageIndex, 1);
-            
-            return new Response(
-              JSON.stringify({ success: true, message: 'Page deleted' }),
-              { status: 200, headers: { 'Content-Type': 'application/json' } }
-            );
-          } else {
-            return new Response(
-              JSON.stringify({ error: 'Page not found' }),
-              { status: 404, headers: { 'Content-Type': 'application/json' } }
-            );
-          }
-        }
-      } else if (url.includes('/api/me') || url.includes('/api/protected')) {
-        return new Response(
-          JSON.stringify(mockDB.user),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
-        );
-      } else if (url.includes('/api/login')) {
-        const loginData = JSON.parse(options.body);
-        if (loginData.email && loginData.password) {
-          const token = autoLogin();
-          return new Response(
-            JSON.stringify({ token, user: mockDB.user }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-    } catch (error) {
-      console.error('Mock API error:', error);
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Default response for unhandled routes
-    return new Response(
-      JSON.stringify({ error: 'Not implemented' }),
-      { status: 501, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  // Mock API endpoints
-  const mockAPI = {
-    // Authentication
-    login: async (email, password) => {
-      await delay();
-      if (email && password) {
-        autoLogin();
-        return { success: true, user: mockDB.user };
-      }
-      throw new Error('Invalid credentials');
-    },
-    
-    logout: async () => {
-      await delay();
-      localStorage.removeItem('token');
-      return { success: true };
-    },
-    
-    // User info
-    getCurrentUser: async () => {
-      await delay();
-      return { ...mockDB.user };
-    },
-    
-    // Pages
-    getPages: async () => {
-      await delay();
-      return [...mockDB.pages];
-    },
-    
-    createPage: async (pageData) => {
-      await delay();
-      const newPage = {
-        id: 'page-' + Date.now(),
-        updatedAt: Date.now(),
-        ...pageData
-      };
-      mockDB.pages.unshift(newPage);
-      return newPage;
-    },
-    
-    // Templates
-    getTemplates: async () => {
-      await delay();
-      return [...mockDB.templates];
-    },
-    
-    // Team
-    getTeamMembers: async () => {
-      await delay();
-      return [...mockDB.team.members];
-    },
-    
-    inviteTeamMember: async (email, role) => {
-      await delay();
-      const newMember = {
-        id: 'user-' + Date.now(),
-        name: email.split('@')[0],
-        email,
-        role: role || 'viewer'
-      };
-      mockDB.team.members.push(newMember);
-      return newMember;
-    }
-  };
-
-  // Expose the mock API to the window
-  window.mockAPI = mockAPI;
+// Add mockAPI functions
+window.mockAPI.login = async function(email, password) {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500));
   
-  // Auto-login on page load to ensure token exists
-  autoLogin();
-})(window); 
+  const user = mockData.users.find(u => u.email === email);
+  if (!user || user.password !== password) {
+    throw new Error('Invalid email or password');
+  }
+  
+  // Create a mock token and store in localStorage
+  const token = 'mock-jwt-token-' + Math.random().toString(36).substring(2);
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify({
+    id: user.id,
+    email: user.email,
+    name: user.name
+  }));
+  
+  return { 
+    success: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name
+    }
+  };
+};
+
+// Get all pages
+window.mockAPI.getPages = async function() {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return [...mockData.pages];
+};
+
+// Get a specific page by ID
+window.mockAPI.getPage = async function(pageId) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  const page = mockData.pages.find(p => p.id === pageId);
+  if (!page) {
+    throw new Error(`Page with ID ${pageId} not found`);
+  }
+  return { ...page };
+};
+
+// Get domains for a specific page
+window.mockAPI.getDomainsForPage = async function(pageId) {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return mockData.domains
+    .filter(d => d.pageId === pageId)
+    .map(d => ({ ...d }));
+};
+
+// Get all domains
+window.mockAPI.getAllDomains = async function() {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return [...mockData.domains];
+};
+
+// Connect a new domain to a page
+window.mockAPI.connectDomain = async function(domainData) {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Validate domain format
+  const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
+  if (!domainRegex.test(domainData.domain)) {
+    throw new Error('Invalid domain format');
+  }
+  
+  // Check if domain already exists
+  if (mockData.domains.some(d => d.domain === domainData.domain)) {
+    throw new Error('Domain already exists');
+  }
+  
+  // Create new domain
+  const newDomain = {
+    id: `domain${mockData.domains.length + 1}`,
+    domain: domainData.domain,
+    pageId: domainData.pageId,
+    status: 'pending',
+    recordType: domainData.recordType || 'A',
+    createdAt: new Date().toISOString()
+  };
+  
+  // Add to mock data
+  mockData.domains.push(newDomain);
+  
+  return { 
+    ...newDomain,
+    message: 'Domain connection initiated. DNS propagation may take up to 48 hours.'
+  };
+};
+
+// Verify a domain
+window.mockAPI.verifyDomain = async function(domainId) {
+  await new Promise(resolve => setTimeout(resolve, 700));
+  
+  const domain = mockData.domains.find(d => d.id === domainId);
+  if (!domain) {
+    throw new Error('Domain not found');
+  }
+  
+  // Update domain status
+  domain.status = 'verified';
+  
+  return { 
+    ...domain,
+    message: 'Domain verified successfully! SSL certificate is being generated.'
+  };
+};
+
+// Disconnect a domain
+window.mockAPI.disconnectDomain = async function(domainId) {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  
+  const domainIndex = mockData.domains.findIndex(d => d.id === domainId);
+  if (domainIndex === -1) {
+    throw new Error('Domain not found');
+  }
+  
+  // Remove domain
+  mockData.domains.splice(domainIndex, 1);
+  
+  return { message: 'Domain disconnected successfully' };
+};
+
+// Create a new page, used when applying templates
+window.mockAPI.createPage = async function(pageData) {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  // Create a new page ID
+  const newId = 'page' + (mockData.pages.length + 1);
+  
+  // Create new page object
+  const newPage = {
+    id: newId,
+    title: pageData.title || 'New Page',
+    content: pageData.content || '<h1>New Page</h1><p>This is a new page.</p>',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    templateId: pageData.templateId || null
+  };
+  
+  // Add to mock data
+  mockData.pages.push(newPage);
+  
+  return { ...newPage, message: 'Page created successfully' };
+}; 

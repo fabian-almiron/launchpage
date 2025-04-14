@@ -7,7 +7,10 @@
         "dev": "nodemon app.js",
         "start": "node app.js",
         "migrate": "npx prisma migrate deploy",
-        "seed": "node seed.js"
+        "seed": "node seed.js",
+        "migrate:add-domains": "node run-migrations.js",
+        "migrate:safe": "bash scripts/apply-migrations.sh",
+        "renew-ssl": "node scripts/renew-ssl.js"
     },
     "dependencies": {
         "@prisma/client": "^5.8.0",

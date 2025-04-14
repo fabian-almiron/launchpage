@@ -7,52 +7,179 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="/dist/output.css" rel="stylesheet">
   <link href="/shared/styles.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
-  <!-- Content will be populated by JavaScript -->
-  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-    <div class="loading-spinner"></div>
-  </div>
-
-  <script src="/shared/mock-api.js"></script>
-  <script src="/shared/layout.js"></script>
-  <script>
-    async function renderTeamUsersContent(container, user) {
-      // Remove loading indicator safely
-      const loadingElement = document.getElementById('loading');
-      if (loadingElement) {
-        loadingElement.remove();
+  <style>
+    /* Inline styles to ensure sidebar works */
+    #sidebar {
+      transform: translateX(0) !important;
+    }
+    
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
       }
       
-      // Create actions section
-      const actionsSection = document.createElement('div');
-      actionsSection.className = 'mb-6 flex justify-between items-center';
-      actionsSection.innerHTML = `
-        <div class="flex items-center">
+      #sidebar.open {
+        transform: translateX(0) !important;
+      }
+    }
+    
+    main {
+      margin-left: 0;
+    }
+    
+    @media (min-width: 768px) {
+      main {
+        margin-left: 16rem !important;
+      }
+    }
+
+    /* Links */
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      color: #4b5563;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+      text-decoration: none;
+    }
+    
+    .sidebar-link:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .sidebar-link svg {
+      margin-right: 0.75rem;
+    }
+
+    .active-link {
+      background-color: #ebf5ff;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Static Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-10 w-64 overflow-y-auto bg-white border-r border-gray-200 pt-5 pb-4">
+    <div class="flex items-center justify-between px-4 mb-6">
+      <div class="flex items-center cursor-pointer" id="logo-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="ml-2 text-xl font-bold text-gray-900">LaunchPage</span>
+      </div>
+      <button id="mobile-menu-button" class="md:hidden rounded-md p-2 inline-flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+      <a href="dashboard.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pages.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+        </svg>
+        Pages
+      </a>
+      <a href="domains.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd" />
+        </svg>
+        Domains
+      </a>
+      <a href="templates.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg>
+        Templates
+      </a>
+      <a href="feature-demo.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path>
+        </svg>
+        Feature Demo
+      </a>
+      <a href="team-settings.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z"></path>
+        </svg>
+        Team Settings
+      </a>
+      <a href="team-users.html" class="sidebar-link active-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+        </svg>
+        Team Members
+      </a>
+      <a href="billing.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+        </svg>
+        Billing
+      </a>
+    </nav>
+    <div class="px-2 space-y-1 pt-6 pb-2 mt-6">
+      <button id="logout-button" class="sidebar-link text-red-700 hover:bg-red-50 hover:text-red-700 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm3 4a1 1 0 011-1h2a1 1 0 010 2H7a1 1 0 01-1-1zm0 3a1 1 0 100 2h7a1 1 0 100-2H6z" clip-rule="evenodd" />
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- User info -->
+  <div class="fixed top-0 right-0 p-4 z-20">
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex flex-col items-end">
+        <span class="text-sm font-medium text-gray-900" id="user-name">Demo User</span>
+        <span class="text-xs text-gray-500" id="user-email">demo@example.com</span>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium" id="user-avatar">
+        D
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="py-6 px-4 sm:px-6 md:px-8 md:ml-64" id="main-content">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Team Members</h1>
+      </div>
+      <div class="mt-3 sm:mt-0">
+        <button id="invite-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+          </svg>
+          Invite User
+        </button>
+      </div>
+    </div>
+    
+    <div id="content">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex justify-between mb-6">
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
               </svg>
             </div>
-            <input id="search-input" type="text" class="input pl-10 w-60" placeholder="Search team members...">
+            <input id="search-input" type="text" class="pl-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 w-60" placeholder="Search team members...">
           </div>
         </div>
-        <div>
-          <button id="invite-btn" class="btn-primary btn-effect flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-            </svg>
-            Invite User
-          </button>
-        </div>
-      `;
-      container.appendChild(actionsSection);
-      
-      // Create team members table
-      const tableSection = document.createElement('div');
-      tableSection.className = 'card overflow-hidden';
-      tableSection.innerHTML = `
+        
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -64,326 +191,219 @@
               </tr>
             </thead>
             <tbody id="user-table" class="bg-white divide-y divide-gray-200">
+              <!-- Admin User -->
               <tr>
-                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-                  <div class="animate-pulse flex space-x-4 justify-center">
-                    <div class="rounded-full bg-gray-200 h-10 w-10"></div>
-                    <div class="flex-1 space-y-2 py-1 max-w-md">
-                      <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                      J
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">Jane Smith</div>
+                      <div class="text-sm text-gray-500">admin@example.com</div>
                     </div>
                   </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                    admin
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Today
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <select class="mr-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
+                    <option value="admin" selected>Admin</option>
+                    <option value="member">Member</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                  <button class="text-red-600 hover:text-red-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Member User -->
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                      J
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">John Doe</div>
+                      <div class="text-sm text-gray-500">member@example.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    member
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Yesterday
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <select class="mr-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
+                    <option value="admin">Admin</option>
+                    <option value="member" selected>Member</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                  <button class="text-red-600 hover:text-red-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Viewer User -->
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                      B
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">Bob Johnson</div>
+                      <div class="text-sm text-gray-500">viewer@example.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                    viewer
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Never
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <select class="mr-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                    <option value="viewer" selected>Viewer</option>
+                  </select>
+                  <button class="text-red-600 hover:text-red-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      `;
-      container.appendChild(tableSection);
-      
-      // Add empty state for no team members
-      const emptyStateDiv = document.createElement('div');
-      emptyStateDiv.className = 'hidden text-center py-16';
-      emptyStateDiv.id = 'empty-state';
-      emptyStateDiv.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <h3 class="text-lg font-medium text-gray-900">No team members found</h3>
-        <p class="text-gray-500 mt-1">Invite team members to collaborate.</p>
-        <button id="empty-invite-btn" class="mt-4 btn-primary btn-effect">Invite Team Members</button>
-      `;
-      container.appendChild(emptyStateDiv);
-      
-      // Create invite modal
-      const modalDiv = document.createElement('div');
-      modalDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
-      modalDiv.id = 'invite-modal';
-      modalDiv.innerHTML = `
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
-          <div class="bg-indigo-600 px-6 py-4">
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-medium text-white">Invite Team Members</h3>
-              <button id="close-modal-btn" class="text-white hover:text-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="p-6">
-            <form id="invite-form">
-              <div class="mb-4">
-                <label for="invite-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input type="email" id="invite-email" class="input" placeholder="colleague@example.com" required>
-              </div>
-              <div class="mb-6">
-                <label for="invite-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select id="invite-role" class="input">
-                  <option value="admin">Admin</option>
-                  <option value="member" selected>Member</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-                <p class="mt-1 text-sm text-gray-500">
-                  <strong>Admin:</strong> Full access to all settings
-                  <br>
-                  <strong>Member:</strong> Can edit pages but not team settings
-                  <br>
-                  <strong>Viewer:</strong> Can only view pages, not edit
-                </p>
-              </div>
-              <div class="flex justify-end">
-                <button type="button" id="cancel-invite-btn" class="btn-secondary mr-2">Cancel</button>
-                <button type="submit" class="btn-primary">Send Invitation</button>
-              </div>
-            </form>
+      </div>
+    </div>
+    
+    <!-- Invite modal -->
+    <div id="invite-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+        <div class="bg-indigo-600 px-6 py-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-medium text-white">Invite Team Members</h3>
+            <button id="close-modal-btn" class="text-white hover:text-gray-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
-      `;
-      container.appendChild(modalDiv);
-      
-      // Set up event listeners
-      document.getElementById('invite-btn').addEventListener('click', showInviteModal);
-      document.getElementById('empty-invite-btn').addEventListener('click', showInviteModal);
-      document.getElementById('close-modal-btn').addEventListener('click', hideInviteModal);
-      document.getElementById('cancel-invite-btn').addEventListener('click', hideInviteModal);
-      document.getElementById('invite-form').addEventListener('submit', handleInvite);
-      document.getElementById('search-input').addEventListener('input', filterUsers);
-      
-      // Fetch and render team members
-      await fetchTeamUsers();
-    }
-    
-    // Global variable to store all team members
-    let allTeamMembers = [];
-    
-    function showInviteModal() {
-      document.getElementById('invite-modal').classList.remove('hidden');
-      document.getElementById('invite-email').focus();
-    }
-    
-    function hideInviteModal() {
-      document.getElementById('invite-modal').classList.add('hidden');
-    }
-    
-    async function fetchTeamUsers() {
-      const token = localStorage.getItem('token');
-      
-      try {
-        // This is a placeholder for demo - in reality we'd use the actual team ID
-        const teamId = '1'; 
-        
-        // For demo purposes, we'll create some fake users
-        // In a real app, this would fetch from the API
-        /*
-        const res = await fetch(`http://localhost:3001/api/teams/${teamId}/users`, {
-          headers: { Authorization: 'Bearer ' + token }
+        <div class="p-6">
+          <form id="invite-form">
+            <div class="mb-4">
+              <label for="invite-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input type="email" id="invite-email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="colleague@example.com" required>
+            </div>
+            <div class="mb-6">
+              <label for="invite-role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <select id="invite-role" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="admin">Admin</option>
+                <option value="member" selected>Member</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              <p class="mt-1 text-sm text-gray-500">
+                <strong>Admin:</strong> Full access to all settings
+                <br>
+                <strong>Member:</strong> Can edit pages but not team settings
+                <br>
+                <strong>Viewer:</strong> Can only view pages, not edit
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" id="cancel-invite-btn" class="mr-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+              <button type="submit" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Send Invitation</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/shared/mock-api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle logo home navigation
+      const logoHome = document.getElementById('logo-home');
+      if (logoHome) {
+        logoHome.addEventListener('click', function() {
+          window.location.href = 'dashboard.html';
         });
-        const users = await res.json();
-        */
-        
-        // Demo data
-        allTeamMembers = [
-          { id: 1, name: 'Jane Smith', email: 'admin@example.com', role: 'admin', lastLoginAt: new Date() },
-          { id: 2, name: 'John Doe', email: 'member@example.com', role: 'member', lastLoginAt: new Date(Date.now() - 86400000) },
-          { id: 3, name: 'Bob Johnson', email: 'viewer@example.com', role: 'viewer', lastLoginAt: null }
-        ];
-        
-        renderUserTable(allTeamMembers);
-      } catch (error) {
-        console.error('Error fetching team users:', error);
-        renderUserTable([]);
-      }
-    }
-    
-    function renderUserTable(users) {
-      const tbody = document.getElementById('user-table');
-      const emptyState = document.getElementById('empty-state');
-      
-      tbody.innerHTML = '';
-      
-      if (users.length === 0) {
-        emptyState.classList.remove('hidden');
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-              No team members found.
-            </td>
-          </tr>
-        `;
-        return;
       }
       
-      emptyState.classList.add('hidden');
-      
-      users.forEach(user => {
-        const row = document.createElement('tr');
-        
-        // Create user cell with avatar and name/email
-        const userCell = document.createElement('td');
-        userCell.className = 'px-6 py-4 whitespace-nowrap';
-        userCell.innerHTML = `
-          <div class="flex items-center">
-            <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-              ${user.name ? user.name.charAt(0) : user.email.charAt(0).toUpperCase()}
-            </div>
-            <div class="ml-4">
-              <div class="text-sm font-medium text-gray-900">${user.name || 'User'}</div>
-              <div class="text-sm text-gray-500">${user.email}</div>
-            </div>
-          </div>
-        `;
-        row.appendChild(userCell);
-        
-        // Role cell with badge
-        const roleCell = document.createElement('td');
-        roleCell.className = 'px-6 py-4 whitespace-nowrap';
-        
-        let roleBadgeClass = '';
-        switch(user.role) {
-          case 'admin':
-            roleBadgeClass = 'bg-purple-100 text-purple-800';
-            break;
-          case 'member':
-            roleBadgeClass = 'bg-blue-100 text-blue-800';
-            break;
-          case 'viewer':
-            roleBadgeClass = 'bg-gray-100 text-gray-800';
-            break;
-        }
-        
-        roleCell.innerHTML = `
-          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleBadgeClass}">
-            ${user.role}
-          </span>
-        `;
-        row.appendChild(roleCell);
-        
-        // Last active cell
-        const lastActiveCell = document.createElement('td');
-        lastActiveCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
-        lastActiveCell.textContent = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never';
-        row.appendChild(lastActiveCell);
-        
-        // Actions cell with role selector and remove button
-        const actionsCell = document.createElement('td');
-        actionsCell.className = 'px-6 py-4 whitespace-nowrap text-right text-sm font-medium';
-        
-        // Create role selector
-        const roleSelector = document.createElement('select');
-        roleSelector.className = 'mr-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm';
-        
-        ['admin', 'member', 'viewer'].forEach(role => {
-          const option = document.createElement('option');
-          option.value = role;
-          option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
-          if (role === user.role) option.selected = true;
-          roleSelector.appendChild(option);
+      // Handle mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', function() {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.toggle('open');
         });
-        
-        roleSelector.addEventListener('change', () => updateUserRole(user.id, roleSelector.value));
-        
-        // Create remove button
-        const removeButton = document.createElement('button');
-        removeButton.className = 'text-red-600 hover:text-red-900';
-        removeButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        `;
-        removeButton.addEventListener('click', () => removeUser(user.id));
-        
-        actionsCell.appendChild(roleSelector);
-        actionsCell.appendChild(removeButton);
-        row.appendChild(actionsCell);
-        
-        tbody.appendChild(row);
+      }
+      
+      // Handle logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', async function() {
+          localStorage.removeItem('token');
+          localStorage.setItem('manual_logout', 'true');
+          window.location.href = 'login.html';
+        });
+      }
+      
+      // Handle invite modal
+      const inviteBtn = document.getElementById('invite-btn');
+      const closeModalBtn = document.getElementById('close-modal-btn');
+      const cancelInviteBtn = document.getElementById('cancel-invite-btn');
+      const inviteModal = document.getElementById('invite-modal');
+      const inviteForm = document.getElementById('invite-form');
+      
+      inviteBtn.addEventListener('click', function() {
+        inviteModal.classList.remove('hidden');
       });
-    }
-    
-    function filterUsers(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      const filteredUsers = allTeamMembers.filter(user => 
-        user.name?.toLowerCase().includes(searchTerm) || 
-        user.email.toLowerCase().includes(searchTerm) ||
-        user.role.toLowerCase().includes(searchTerm)
-      );
-      renderUserTable(filteredUsers);
-    }
-    
-    async function updateUserRole(userId, newRole) {
-      const token = localStorage.getItem('token');
       
-      try {
-        // In a real app, this would call the API
-        // Update the local data for demo
-        allTeamMembers = allTeamMembers.map(user => {
-          if (user.id === userId) {
-            return { ...user, role: newRole };
-          }
-          return user;
-        });
+      closeModalBtn.addEventListener('click', function() {
+        inviteModal.classList.add('hidden');
+      });
+      
+      cancelInviteBtn.addEventListener('click', function() {
+        inviteModal.classList.add('hidden');
+      });
+      
+      inviteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('invite-email').value;
+        const role = document.getElementById('invite-role').value;
         
-        alert(`User role updated to ${newRole}`);
-      } catch (error) {
-        console.error('Error updating user role:', error);
-        alert('Failed to update user role');
-      }
-    }
-    
-    async function removeUser(userId) {
-      if (!confirm('Are you sure you want to remove this user from the team?')) {
-        return;
-      }
-      
-      const token = localStorage.getItem('token');
-      
-      try {
-        // In a real app, this would call the API
-        // Update the local data for demo
-        allTeamMembers = allTeamMembers.filter(user => user.id !== userId);
-        renderUserTable(allTeamMembers);
-        
-        alert('User removed from team');
-      } catch (error) {
-        console.error('Error removing user:', error);
-        alert('Failed to remove user');
-      }
-    }
-    
-    async function handleInvite(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('invite-email').value;
-      const role = document.getElementById('invite-role').value;
-      
-      if (!email) return;
-      
-      try {
-        // In a real app, this would call the API
-        // For demo, just add to the local array
-        const newUser = {
-          id: Date.now(), // random ID for demo
-          email: email,
-          role: role,
-          lastLoginAt: null
-        };
-        
-        allTeamMembers.push(newUser);
-        renderUserTable(allTeamMembers);
-        
-        hideInviteModal();
-        document.getElementById('invite-form').reset();
-        
-        alert(`Invitation sent to ${email}`);
-      } catch (error) {
-        console.error('Error sending invitation:', error);
-        alert('Failed to send invitation');
-      }
-    }
-    
-    // Initialize the team users view
-    setupDashboard('team-users', 'Team Members', renderTeamUsersContent);
+        alert(`Invitation sent to ${email} with role: ${role}`);
+        inviteModal.classList.add('hidden');
+        inviteForm.reset();
+      });
+    });
   </script>
 </body>
 </html>

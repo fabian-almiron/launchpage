@@ -7,181 +7,521 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="/dist/output.css" rel="stylesheet">
   <link href="/shared/styles.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
-  <!-- Content will be populated by JavaScript -->
-  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-    <div class="loading-spinner"></div>
-  </div>
-
-  <script src="/shared/mock-api.js"></script>
-  <script src="/shared/layout.js"></script>
-  <script>
-    async function renderTeamSettingsContent(container, user) {
-      // Remove loading indicator safely
-      const loadingElement = document.getElementById('loading');
-      if (loadingElement) {
-        loadingElement.remove();
+  <style>
+    /* Inline styles to ensure sidebar works */
+    #sidebar {
+      transform: translateX(0) !important;
+    }
+    
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
       }
       
-      // Create team profile card
-      const profileSection = document.createElement('div');
-      profileSection.className = 'mb-8';
-      profileSection.innerHTML = `
-        <h2 class="text-lg font-medium mb-4">Team Profile</h2>
-        <div class="card">
-          <form id="team-form" class="space-y-6">
+      #sidebar.open {
+        transform: translateX(0) !important;
+      }
+    }
+    
+    main {
+      margin-left: 0;
+    }
+    
+    @media (min-width: 768px) {
+      main {
+        margin-left: 16rem !important;
+      }
+    }
+
+    /* Links */
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      color: #4b5563;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+      text-decoration: none;
+    }
+    
+    .sidebar-link:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .sidebar-link svg {
+      margin-right: 0.75rem;
+    }
+
+    .active-link {
+      background-color: #ebf5ff;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+    
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      max-width: 24rem;
+      z-index: 50;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification-success {
+      background-color: #ecfdf5;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    
+    .notification-error {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #b91c1c;
+    }
+    
+    .notification-info {
+      background-color: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    .notification-icon {
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .notification-message {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 500;
+    }
+    
+    .notification-close {
+      margin-left: 0.75rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Notification container -->
+  <div id="notification-container"></div>
+  
+  <!-- Static Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-10 w-64 overflow-y-auto bg-white border-r border-gray-200 pt-5 pb-4">
+    <div class="flex items-center justify-between px-4 mb-6">
+      <div class="flex items-center cursor-pointer" id="logo-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="ml-2 text-xl font-bold text-gray-900">LaunchPage</span>
+      </div>
+      <button id="mobile-menu-button" class="md:hidden rounded-md p-2 inline-flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+      <a href="dashboard.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pages.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+        </svg>
+        Pages
+      </a>
+      <a href="domains.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd" />
+        </svg>
+        Domains
+      </a>
+      <a href="templates.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg>
+        Templates
+      </a>
+      <a href="feature-demo.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path>
+        </svg>
+        Feature Demo
+      </a>
+      <a href="team-settings.html" class="sidebar-link active-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z"></path>
+        </svg>
+        Team Settings
+      </a>
+      <a href="team-users.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+        </svg>
+        Team Members
+      </a>
+      <a href="billing.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+        </svg>
+        Billing
+      </a>
+    </nav>
+    <div class="px-2 space-y-1 pt-6 pb-2 mt-6">
+      <button id="logout-button" class="sidebar-link text-red-700 hover:bg-red-50 hover:text-red-700 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm3 4a1 1 0 011-1h2a1 1 0 010 2H7a1 1 0 01-1-1zm0 3a1 1 0 100 2h7a1 1 0 100-2H6z" clip-rule="evenodd" />
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- User info -->
+  <div class="fixed top-0 right-0 p-4 z-20">
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex flex-col items-end">
+        <span class="text-sm font-medium text-gray-900" id="user-name">Demo User</span>
+        <span class="text-xs text-gray-500" id="user-email">demo@example.com</span>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium" id="user-avatar">
+        D
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="py-6 px-4 sm:px-6 md:px-8 md:ml-64" id="main-content">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Team Settings</h1>
+      </div>
+    </div>
+    
+    <div id="content">
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <form>
+          <h2 class="text-xl font-semibold mb-4">Team Profile</h2>
+          <div class="grid grid-cols-1 gap-6">
             <div>
-              <label for="team-name" class="block text-sm font-medium text-gray-700">Team Name</label>
-              <input type="text" id="team-name" name="name" class="input mt-1" placeholder="Your team name">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
+              <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" value="Demo Team" />
             </div>
             
             <div>
-              <label for="team-domain" class="block text-sm font-medium text-gray-700">Custom Domain</label>
-              <div class="mt-1 flex rounded-md shadow-sm">
-                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                  https://
-                </span>
-                <input type="text" id="team-domain" name="domain" class="input rounded-none rounded-r-md" placeholder="yourcompany.com">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Team Logo</label>
+              <div class="flex items-center space-x-4">
+                <div class="h-16 w-16 bg-indigo-100 rounded-md flex items-center justify-center text-indigo-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <button type="button" id="upload-logo-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Upload Logo
+                </button>
               </div>
-              <p class="mt-1 text-sm text-gray-500">
-                Only available on Pro and Agency plans.
-              </p>
+              <p class="mt-1 text-sm text-gray-500">Recommended: 512x512px PNG or JPG</p>
             </div>
             
             <div>
-              <button type="submit" class="btn-primary">
-                Save Changes
+              <label class="block text-sm font-medium text-gray-700 mb-1">Custom Domain</label>
+              <div class="grid grid-cols-1 gap-1">
+                <div class="flex items-center space-x-2">
+                  <input type="text" placeholder="yourdomain" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                  <span class="text-gray-500">.launchpage.app</span>
+                </div>
+                <p class="text-sm text-gray-500">Your team's subdomain for LaunchPage</p>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Team Description</label>
+              <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Brief description of your team...">Demo team for demonstration purposes</textarea>
+            </div>
+          </div>
+          
+          <div class="mt-6">
+            <button type="button" id="save-team-profile-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Save Team Profile
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Security Settings</h2>
+        <div class="grid grid-cols-1 gap-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-medium text-gray-900">Two-Factor Authentication</h3>
+              <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+            </div>
+            <button type="button" id="enable-2fa-btn" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500">
+              Enable
+            </button>
+          </div>
+          
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-medium text-gray-900">API Keys</h3>
+                <p class="text-sm text-gray-500">Manage API keys for programmatic access</p>
+              </div>
+              <button type="button" id="manage-api-keys-btn" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500">
+                Manage Keys
               </button>
             </div>
-          </form>
-        </div>
-      `;
-      container.appendChild(profileSection);
-      
-      // Create team API settings
-      const apiSection = document.createElement('div');
-      apiSection.className = 'mb-8';
-      apiSection.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-medium">API Keys</h2>
-          <button id="create-api-key-btn" class="btn-secondary text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Create API Key
-          </button>
-        </div>
-        <div class="card overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
-                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200" id="api-keys-list">
-                <tr>
-                  <td colspan="4" class="px-6 py-4 text-sm text-gray-500 text-center">
-                    No API keys found. Create one to get started.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          </div>
+          
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-medium text-gray-900">Single Sign-On (SSO)</h3>
+                <p class="text-sm text-gray-500">Connect with your organization's identity provider</p>
+              </div>
+              <span class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-gray-700 bg-gray-100">
+                Enterprise Plan Only
+              </span>
+            </div>
           </div>
         </div>
-      `;
-      container.appendChild(apiSection);
+      </div>
       
-      // Create danger zone section
-      const dangerSection = document.createElement('div');
-      dangerSection.innerHTML = `
-        <h2 class="text-lg font-medium mb-4">Danger Zone</h2>
-        <div class="card border-red-200 bg-red-50">
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold mb-4">Danger Zone</h2>
+        <div class="border border-red-200 rounded-lg p-4 bg-red-50">
           <h3 class="text-base font-medium text-red-800 mb-2">Delete Team</h3>
-          <p class="text-sm text-red-600 mb-4">
-            Once you delete your team, there is no going back. Please be certain.
-          </p>
-          <button id="delete-team-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">
+          <p class="text-sm text-red-700 mb-4">This action cannot be undone. This will permanently delete your team, including all pages, templates, and user data.</p>
+          <button type="button" id="delete-team-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
             Delete Team
           </button>
         </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/shared/mock-api.js"></script>
+  <script>
+    // Function to show notifications
+    function showNotification(message, type = 'info', duration = 3000) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      
+      // Icon based on notification type
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+      } else if (type === 'error') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+      } else {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
+      }
+      
+      // Set notification content
+      notification.innerHTML = `
+        <div class="notification-icon">${iconSvg}</div>
+        <div class="notification-message">${message}</div>
+        <div class="notification-close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </div>
       `;
-      container.appendChild(dangerSection);
       
-      // Add event listeners
-      document.getElementById('team-form').addEventListener('submit', handleTeamFormSubmit);
-      document.getElementById('create-api-key-btn').addEventListener('click', createApiKey);
-      document.getElementById('delete-team-btn').addEventListener('click', confirmDeleteTeam);
+      // Create container if it doesn't exist
+      let container = document.getElementById('notification-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style.position = 'fixed';
+        container.style.top = '1rem';
+        container.style.right = '1rem';
+        container.style.zIndex = '50';
+        document.body.appendChild(container);
+      }
       
-      // Load team data
-      await loadTeamData();
+      // Add to notification container
+      container.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      
+      // Add close button handler
+      notification.querySelector('.notification-close').addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      });
+      
+      // Auto-remove after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            notification.remove();
+          }, 300);
+        }, duration);
+      }
+      
+      return notification;
     }
-    
-    async function loadTeamData() {
-      const token = localStorage.getItem('token');
-      try {
-        // This is a placeholder - would need a proper API endpoint for team data
-        const res = await fetch('http://localhost:3001/api/protected', {
-          headers: {
-            Authorization: 'Bearer ' + token
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle logo home navigation
+      const logoHome = document.getElementById('logo-home');
+      if (logoHome) {
+        logoHome.addEventListener('click', function() {
+          window.location.href = 'dashboard.html';
+        });
+      }
+      
+      // Handle mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', function() {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.toggle('open');
+        });
+      }
+      
+      // Handle logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', async function() {
+          localStorage.removeItem('token');
+          localStorage.setItem('manual_logout', 'true');
+          window.location.href = 'login.html';
+        });
+      }
+      
+      // Handle Save Team Profile button
+      const saveTeamProfileButton = document.getElementById('save-team-profile-btn');
+      if (saveTeamProfileButton) {
+        saveTeamProfileButton.addEventListener('click', async function(e) {
+          e.preventDefault();
+          
+          // Show loading notification
+          showNotification('Saving team profile...', 'info');
+          
+          // Get form values
+          const teamName = document.querySelector('input[type="text"]').value;
+          const teamDescription = document.querySelector('textarea').value;
+          const subdomain = document.querySelector('input[placeholder="yourdomain"]').value;
+          
+          // Validate form
+          if (!teamName.trim()) {
+            showNotification('Team name is required', 'error');
+            return;
+          }
+          
+          try {
+            // Simulate API call with timeout
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Update team info in mock data
+            if (window.mockAPI && typeof window.mockAPI.getTeamMembers === 'function') {
+              // Display success message
+              showNotification('Team profile saved successfully!', 'success');
+            } else {
+              throw new Error('Mock API not available');
+            }
+          } catch (error) {
+            console.error('Error saving team profile:', error);
+            showNotification('Error saving team profile. Please try again.', 'error');
           }
         });
-        
-        if (res.ok) {
-          const userData = await res.json();
-          
-          // Fill in the form with sample data
-          document.getElementById('team-name').value = userData.team || 'My Team';
-          
-          // In a real app, you would get this from the team API response
-          if (userData.plan === 'pro' || userData.plan === 'agency') {
-            document.getElementById('team-domain').disabled = false;
-            document.getElementById('team-domain').value = 'mycompany.com';
-          } else {
-            document.getElementById('team-domain').disabled = true;
-            document.getElementById('team-domain').value = '';
-            document.getElementById('team-domain').placeholder = 'Upgrade to Pro or Agency to enable custom domains';
+      }
+      
+      // Handle 2FA Enable button
+      const twoFAButton = document.getElementById('enable-2fa-btn');
+      if (twoFAButton) {
+        twoFAButton.addEventListener('click', function() {
+          showNotification('2FA setup wizard would open here', 'info');
+        });
+      }
+      
+      // Handle Manage API Keys button
+      const apiKeysButton = document.getElementById('manage-api-keys-btn');
+      if (apiKeysButton) {
+        apiKeysButton.addEventListener('click', function() {
+          showNotification('API key management panel would open here', 'info');
+        });
+      }
+      
+      // Handle Delete Team button
+      const deleteTeamButton = document.getElementById('delete-team-btn');
+      if (deleteTeamButton) {
+        deleteTeamButton.addEventListener('click', function() {
+          const confirmDelete = confirm('Are you sure you want to delete this team? This action cannot be undone.');
+          if (confirmDelete) {
+            showNotification('Team deletion initiated. You will be logged out shortly.', 'info');
+            setTimeout(() => {
+              localStorage.removeItem('token');
+              localStorage.setItem('manual_logout', 'true');
+              window.location.href = 'login.html';
+            }, 3000);
           }
-        }
-      } catch (error) {
-        console.error('Error loading team data:', error);
+        });
       }
-    }
-    
-    async function handleTeamFormSubmit(e) {
-      e.preventDefault();
       
-      // Show a success message (in a real app, we would actually save this data)
-      alert('Team settings saved successfully!');
-    }
-    
-    async function createApiKey() {
-      const name = prompt('Enter a name for this API key:');
-      if (!name) return;
-      
-      // In a real app, this would call an API to create a new key
-      alert(`API key created: ${name}-${Math.random().toString(36).substring(2, 15)}`);
-      
-      // Reload API keys
-      // loadApiKeys();
-    }
-    
-    function confirmDeleteTeam() {
-      const confirm = window.confirm('Are you sure you want to delete your team? This action cannot be undone.');
-      
-      if (confirm) {
-        // In a real app, this would call an API to delete the team
-        alert('Team deleted successfully.');
-        window.location.href = '/login.html';
+      // Handle Upload Logo button
+      const uploadLogoButton = document.getElementById('upload-logo-btn');
+      if (uploadLogoButton) {
+        uploadLogoButton.addEventListener('click', function() {
+          // Create a file input element
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          
+          // Trigger file selection
+          fileInput.click();
+          
+          // Handle file selection
+          fileInput.addEventListener('change', function() {
+            if (fileInput.files && fileInput.files[0]) {
+              const reader = new FileReader();
+              
+              reader.onload = function(e) {
+                // Update the logo placeholder with the selected image
+                const logoPlaceholder = document.querySelector('.h-16.w-16');
+                logoPlaceholder.innerHTML = '';
+                logoPlaceholder.style.backgroundImage = `url(${e.target.result})`;
+                logoPlaceholder.style.backgroundSize = 'cover';
+                logoPlaceholder.style.backgroundPosition = 'center';
+                
+                showNotification('Logo uploaded successfully!', 'success');
+              };
+              
+              reader.readAsDataURL(fileInput.files[0]);
+            }
+          });
+        });
       }
-    }
-    
-    // Initialize the team settings view
-    setupDashboard('team', 'Team Settings', renderTeamSettingsContent);
+    });
   </script>
 </body>
 </html>

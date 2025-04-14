@@ -7,6 +7,85 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="/dist/output.css" rel="stylesheet">
   <link href="/shared/styles.css" rel="stylesheet">
+  <style>
+    /* Guaranteed styles to ensure layout works properly */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .min-h-screen {
+      min-height: 100vh;
+    }
+    .flex {
+      display: flex;
+    }
+    .flex-col {
+      flex-direction: column;
+    }
+    .justify-between {
+      justify-content: space-between;
+    }
+    .items-center {
+      align-items: center;
+    }
+    .justify-center {
+      justify-content: center;
+    }
+    .text-white {
+      color: white;
+    }
+    .text-indigo-200 {
+      color: #c7d2fe;
+    }
+    .bg-indigo-600 {
+      background-color: #4f46e5;
+    }
+    .bg-gray-50 {
+      background-color: #f9fafb;
+    }
+    .p-8 {
+      padding: 2rem;
+    }
+    .w-full {
+      width: 100%;
+    }
+    .hidden {
+      display: none;
+    }
+    .mt-12 {
+      margin-top: 3rem;
+    }
+    .mt-16 {
+      margin-top: 4rem;
+    }
+    .space-y-6 > * + * {
+      margin-top: 1.5rem;
+    }
+    .max-w-md {
+      max-width: 28rem;
+    }
+    
+    @media (min-width: 768px) {
+      .md\:flex-row {
+        flex-direction: row !important;
+      }
+      .md\:w-1\/2 {
+        width: 50% !important;
+        flex: 0 0 50% !important;
+      }
+      .md\:p-12 {
+        padding: 3rem !important;
+      }
+      .md\:mt-0 {
+        margin-top: 0 !important;
+      }
+      .md\:text-4xl {
+        font-size: 2.25rem !important;
+        line-height: 2.5rem !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-50 font-sans">
   <div class="min-h-screen flex flex-col md:flex-row">
@@ -69,12 +148,12 @@
         <form id="login-form" class="space-y-6">
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required value="demo@example.com">
+            <input type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required value="fabian.e.almiron@gmail.com">
           </div>
 
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input type="password" id="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required value="demo">
+            <input type="password" id="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required value="password">
             <p class="mt-2 text-sm text-gray-500">
               <a href="#" class="text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
             </p>
@@ -106,6 +185,54 @@
 
   <script src="/shared/mock-api.js"></script>
   <script>
+    // Fallback mockAPI implementation in case the external script fails to load
+    if (!window.mockAPI || !window.mockAPI.login) {
+      console.log('Creating fallback mockAPI implementation');
+      window.mockAPI = window.mockAPI || {};
+      window.mockAPI.login = async function(email, password) {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const mockUsers = [
+          {
+            id: 'user1',
+            email: 'demo@example.com',
+            password: 'demo',
+            name: 'Demo User'
+          },
+          {
+            id: 'user2',
+            email: 'fabian.e.almiron@gmail.com',
+            password: 'password',
+            name: 'Fabian Almiron'
+          }
+        ];
+        
+        const user = mockUsers.find(u => u.email === email);
+        if (!user || user.password !== password) {
+          throw new Error('Invalid email or password');
+        }
+        
+        // Create a mock token and store in localStorage
+        const token = 'mock-jwt-token-' + Math.random().toString(36).substring(2);
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({
+          id: user.id,
+          email: user.email,
+          name: user.name
+        }));
+        
+        return { 
+          success: true, 
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name
+          }
+        };
+      };
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       // Check if already logged in
       const token = localStorage.getItem('token');
@@ -125,12 +252,19 @@
         
         try {
           loginError.classList.add('hidden');
+          
+          // Clear the manual logout flag
+          localStorage.removeItem('manual_logout');
+          
+          console.log('Attempting login with mockAPI:', !!window.mockAPI);
           const result = await window.mockAPI.login(email, password);
+          console.log('Login result:', result);
           
           if (result.success) {
             window.location.href = '/dashboard.html';
           }
         } catch (error) {
+          console.error('Login error:', error);
           loginError.textContent = error.message || 'Failed to sign in. Please check your credentials.';
           loginError.classList.remove('hidden');
         }
@@ -138,4 +272,4 @@
     });
   </script>
 </body>
-</html>
+</html> 

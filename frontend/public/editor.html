@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Page | LaunchPage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/dist/output.css" rel="stylesheet">
+  <link href="/shared/styles.css" rel="stylesheet">
+  <style>
+    /* Inline styles to ensure sidebar works */
+    #sidebar {
+      transform: translateX(0) !important;
+    }
+    
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
+      }
+      
+      #sidebar.open {
+        transform: translateX(0) !important;
+      }
+    }
+    
+    main {
+      margin-left: 0;
+    }
+    
+    @media (min-width: 768px) {
+      main {
+        margin-left: 16rem !important;
+      }
+    }
+
+    /* Links */
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      color: #4b5563;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+      text-decoration: none;
+    }
+    
+    .sidebar-link:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .sidebar-link svg {
+      margin-right: 0.75rem;
+    }
+
+    .active-link {
+      background-color: #ebf5ff;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    /* Editor Styles */
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 8rem);
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      padding: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+    }
+
+    .editor-toolbar button {
+      margin-right: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+    }
+
+    .editor-toolbar button:hover {
+      background-color: #f3f4f6;
+    }
+
+    .editor-content {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    #page-title {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.25rem;
+      font-size: 1.25rem;
+    }
+
+    #page-content {
+      width: 100%;
+      min-height: 300px;
+      padding: 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      max-width: 24rem;
+      z-index: 50;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification-success {
+      background-color: #ecfdf5;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    
+    .notification-error {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #b91c1c;
+    }
+    
+    .notification-info {
+      background-color: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    .notification-icon {
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .notification-message {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 500;
+    }
+    
+    .notification-close {
+      margin-left: 0.75rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Notification container -->
+  <div id="notification-container"></div>
+
+  <!-- Static Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-10 w-64 overflow-y-auto bg-white border-r border-gray-200 pt-5 pb-4">
+    <div class="flex items-center justify-between px-4 mb-6">
+      <div class="flex items-center cursor-pointer" id="logo-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="ml-2 text-xl font-bold text-gray-900">LaunchPage</span>
+      </div>
+      <button id="mobile-menu-button" class="md:hidden rounded-md p-2 inline-flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+      <a href="dashboard.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pages.html" class="sidebar-link active-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+        </svg>
+        Pages
+      </a>
+      <a href="templates.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg>
+        Templates
+      </a>
+      <a href="feature-demo.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path>
+        </svg>
+        Feature Demo
+      </a>
+      <a href="team-settings.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z"></path>
+        </svg>
+        Team Settings
+      </a>
+      <a href="team-users.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+        </svg>
+        Team Members
+      </a>
+      <a href="billing.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+        </svg>
+        Billing
+      </a>
+    </nav>
+    <div class="px-2 space-y-1 pt-6 pb-2 mt-6">
+      <button id="logout-button" class="sidebar-link text-red-700 hover:bg-red-50 hover:text-red-700 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm3 4a1 1 0 011-1h2a1 1 0 010 2H7a1 1 0 01-1-1zm0 3a1 1 0 100 2h7a1 1 0 100-2H6z" clip-rule="evenodd" />
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- User info -->
+  <div class="fixed top-0 right-0 p-4 z-20">
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex flex-col items-end">
+        <span class="text-sm font-medium text-gray-900" id="user-name">Demo User</span>
+        <span class="text-xs text-gray-500" id="user-email">demo@example.com</span>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium" id="user-avatar">
+        D
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="py-6 px-4 sm:px-6 md:px-8 md:ml-64" id="main-content">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Edit Page</h1>
+      </div>
+      <div class="mt-3 sm:mt-0 flex space-x-3">
+        <button id="save-button" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          Save Changes
+        </button>
+        <button id="cancel-button" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-md shadow-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
+    
+    <div id="content">
+      <div class="bg-white shadow-sm rounded-lg overflow-hidden p-6">
+        <div class="mb-4">
+          <label for="page-title" class="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
+          <input type="text" id="page-title" name="page-title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        
+        <div class="mb-4">
+          <label for="page-content" class="block text-sm font-medium text-gray-700 mb-1">Page Content (HTML)</label>
+          <textarea id="page-content" name="page-content" rows="15" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-mono"></textarea>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/shared/mock-api.js"></script>
+  <script>
+    // Notification system
+    function showNotification(message, type = 'info', duration = 3000) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      
+      // Icon based on notification type
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+      } else if (type === 'error') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+      } else {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
+      }
+      
+      // Set notification content
+      notification.innerHTML = `
+        <div class="notification-icon">${iconSvg}</div>
+        <div class="notification-message">${message}</div>
+        <div class="notification-close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </div>
+      `;
+      
+      // Add to notification container
+      const container = document.getElementById('notification-container');
+      container.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      
+      // Add close button handler
+      notification.querySelector('.notification-close').addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      });
+      
+      // Auto-remove after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            notification.remove();
+          }, 300);
+        }, duration);
+      }
+      
+      return notification;
+    }
+
+    // Variable to store the current page being edited
+    let currentPage = null;
+    
+    // Function to load page content
+    async function loadPageContent() {
+      const pageId = localStorage.getItem('currentEditPageId');
+      
+      if (!pageId) {
+        showNotification('No page selected for editing', 'error');
+        window.location.href = 'pages.html';
+        return;
+      }
+      
+      try {
+        console.log('Loading page with ID:', pageId);
+        
+        // Get all pages from the mockAPI
+        const allPages = await window.mockAPI.getPages();
+        
+        // Find the page with the matching ID
+        currentPage = allPages.find(page => page.id === pageId);
+        
+        if (!currentPage) {
+          throw new Error(`Page with ID ${pageId} not found`);
+        }
+        
+        console.log('Found page:', currentPage);
+        
+        // Populate the form with page data
+        document.getElementById('page-title').value = currentPage.title || '';
+        document.getElementById('page-content').value = currentPage.content || '';
+        
+      } catch (error) {
+        console.error('Error loading page content:', error);
+        showNotification('An error occurred while loading the page content', 'error');
+      }
+    }
+    
+    // Function to save page content
+    async function savePageContent() {
+      if (!currentPage) {
+        showNotification('No page to save', 'error');
+        return;
+      }
+      
+      try {
+        const updatedTitle = document.getElementById('page-title').value;
+        const updatedContent = document.getElementById('page-content').value;
+        
+        if (!updatedTitle.trim()) {
+          showNotification('Page title cannot be empty', 'error');
+          return;
+        }
+        
+        // Update the current page object with the new values
+        const updatedPage = {
+          ...currentPage,
+          title: updatedTitle,
+          content: updatedContent,
+          updatedAt: Date.now()
+        };
+        
+        // Get all pages from localStorage
+        let storedPages = [];
+        try {
+          storedPages = JSON.parse(localStorage.getItem('mockPages') || '[]');
+        } catch (e) {
+          console.error('Error parsing stored pages:', e);
+          storedPages = [];
+        }
+        
+        // Update the page in the stored pages array
+        const pageIndex = storedPages.findIndex(p => p.id === currentPage.id);
+        if (pageIndex !== -1) {
+          storedPages[pageIndex] = updatedPage;
+        } else {
+          storedPages.unshift(updatedPage);
+        }
+        
+        // Save back to localStorage
+        localStorage.setItem('mockPages', JSON.stringify(storedPages));
+        
+        // Update page in the mock database by re-getting all pages
+        // This will incorporate our localStorage change
+        await window.mockAPI.getPages();
+        
+        // Show success notification and redirect after a brief delay
+        showNotification('Page saved successfully', 'success');
+        
+        setTimeout(() => {
+          // Redirect back to pages list
+          window.location.href = 'pages.html';
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Error saving page content:', error);
+        showNotification('An error occurred while saving the page content', 'error');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load the page content
+      loadPageContent();
+      
+      // Handle logo home navigation
+      const logoHome = document.getElementById('logo-home');
+      if (logoHome) {
+        logoHome.addEventListener('click', function() {
+          window.location.href = 'dashboard.html';
+        });
+      }
+      
+      // Handle mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', function() {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.toggle('open');
+        });
+      }
+      
+      // Handle save button
+      const saveButton = document.getElementById('save-button');
+      if (saveButton) {
+        saveButton.addEventListener('click', savePageContent);
+      }
+      
+      // Handle cancel button
+      const cancelButton = document.getElementById('cancel-button');
+      if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+          if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+            window.location.href = 'pages.html';
+          }
+        });
+      }
+      
+      // Handle logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
+          localStorage.removeItem('token');
+          localStorage.setItem('manual_logout', 'true');
+          window.location.href = 'login.html';
+        });
+      }
+    });
+  </script>
+</body>
+</html> 

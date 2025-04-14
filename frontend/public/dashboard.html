@@ -7,16 +7,200 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="/dist/output.css" rel="stylesheet">
   <link href="/shared/styles.css" rel="stylesheet">
+  <style>
+    /* Inline styles to ensure sidebar works */
+    #sidebar {
+      transform: translateX(0) !important;
+    }
+    
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
+      }
+      
+      #sidebar.open {
+        transform: translateX(0) !important;
+      }
+    }
+    
+    main {
+      margin-left: 0;
+    }
+    
+    @media (min-width: 768px) {
+      main {
+        margin-left: 16rem !important;
+      }
+    }
+
+    /* Links */
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      color: #4b5563;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+      margin-bottom: 0.25rem;
+      text-decoration: none;
+    }
+    
+    .sidebar-link:hover {
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .sidebar-link svg {
+      margin-right: 0.75rem;
+    }
+
+    .active-link {
+      background-color: #ebf5ff;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
+  <!-- Static Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-10 w-64 overflow-y-auto bg-white border-r border-gray-200 pt-5 pb-4">
+    <div class="flex items-center justify-between px-4 mb-6">
+      <div class="flex items-center cursor-pointer" id="logo-home">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+        <span class="ml-2 text-xl font-bold text-gray-900">LaunchPage</span>
+      </div>
+      <button id="mobile-menu-button" class="md:hidden rounded-md p-2 inline-flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+      <a href="dashboard.html" class="sidebar-link active-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pages.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+        </svg>
+        Pages
+      </a>
+      <a href="domains.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd" />
+        </svg>
+        Domains
+      </a>
+      <a href="templates.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg>
+        Templates
+      </a>
+      <a href="feature-demo.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd"></path>
+        </svg>
+        Feature Demo
+      </a>
+      <a href="team-settings.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z"></path>
+        </svg>
+        Team Settings
+      </a>
+      <a href="team-users.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+        </svg>
+        Team Members
+      </a>
+      <a href="billing.html" class="sidebar-link">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+        </svg>
+        Billing
+      </a>
+    </nav>
+    <div class="px-2 space-y-1 pt-6 pb-2 mt-6">
+      <button id="logout-button" class="sidebar-link text-red-700 hover:bg-red-50 hover:text-red-700 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm3 4a1 1 0 011-1h2a1 1 0 010 2H7a1 1 0 01-1-1zm0 3a1 1 0 100 2h7a1 1 0 100-2H6z" clip-rule="evenodd" />
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
   <!-- Content will be populated by JavaScript -->
   <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
     <div class="loading-spinner"></div>
   </div>
 
+  <!-- User info -->
+  <div class="fixed top-0 right-0 p-4 z-20">
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex flex-col items-end">
+        <span class="text-sm font-medium text-gray-900" id="user-name">Demo User</span>
+        <span class="text-xs text-gray-500" id="user-email">demo@example.com</span>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium" id="user-avatar">
+        D
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="py-6 px-4 sm:px-6 md:px-8 md:ml-64" id="main-content">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      </div>
+    </div>
+    
+    <div id="content">
+      <!-- Dashboard content will be populated here -->
+    </div>
+  </main>
+
   <script src="/shared/mock-api.js"></script>
   <script src="/shared/layout.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle mobile menu toggle
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', function() {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.toggle('open');
+        });
+      }
+      
+      // Handle logout
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', async function() {
+          localStorage.removeItem('token');
+          localStorage.setItem('manual_logout', 'true');
+          window.location.href = 'login.html';
+        });
+      }
+      
+      // Render dashboard content
+      const container = document.getElementById('content');
+      renderDashboardContent(container, { 
+        name: 'Demo User',
+        email: 'demo@example.com',
+        role: 'admin'
+      });
+    });
+
     async function renderDashboardContent(container, user) {
       // Remove loading indicator safely
       const loadingElement = document.getElementById('loading');
@@ -49,7 +233,7 @@
               </div>
               <div>
                 <h3 class="font-medium">Pages Created</h3>
-                <p class="text-2xl font-bold" id="total-pages">...</p>
+                <p class="text-2xl font-bold" id="total-pages">3</p>
               </div>
             </div>
             <div class="flex items-center bg-white bg-opacity-10 rounded-lg p-4">
@@ -72,12 +256,12 @@
               </div>
               <div>
                 <h3 class="font-medium">Current Plan</h3>
-                <p class="text-2xl font-bold" id="current-plan">...</p>
+                <p class="text-2xl font-bold" id="current-plan">Pro</p>
               </div>
             </div>
           </div>
           <div class="mt-6 flex">
-            <a href="/templates.html" class="bg-white text-indigo-600 hover:bg-indigo-50 px-5 py-3 rounded-lg font-medium flex items-center">
+            <a href="templates.html" class="bg-white text-indigo-600 hover:bg-indigo-50 px-5 py-3 rounded-lg font-medium flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
               </svg>
@@ -87,255 +271,7 @@
         </div>
       `;
       container.appendChild(welcomeSection);
-      
-      // Feature sections
-      const featureSections = [
-        {
-          title: "Core Functionality",
-          features: [
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>',
-              title: "Drag & Drop Page Builder",
-              description: "Build landing pages by dragging reusable content blocks into a live canvas."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>',
-              title: "Inline Content Editing",
-              description: "Click and edit text directly inside blocks—no panels or markdown needed."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>',
-              title: "Image Uploader",
-              description: "Upload and preview images in-place."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>',
-              title: "Theme Picker",
-              description: "Change fonts/colors for the entire page using visual style presets (Modern, Elegant, Bold)."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>',
-              title: "Autosave",
-              description: "Page content auto-saves every 15 seconds—no more lost work."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-              title: "Version History",
-              description: "View and restore any previously saved version of a page (via sidebar in editor)."
-            }
-          ]
-        },
-        {
-          title: "Publishing Options",
-          features: [
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>',
-              title: "Preview Mode",
-              description: "Every page has a live /preview.html?id=... URL for sharing."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>',
-              title: "Download HTML",
-              description: "Export any page as a standalone .html file."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>',
-              title: "Publish to WordPress",
-              description: "One-click export to any WordPress site using REST API + app password."
-            }
-          ]
-        },
-        {
-          title: "Team & Role Management",
-          features: [
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>',
-              title: "User Accounts",
-              description: "Login/register flow with JWT-based auth."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>',
-              title: "Roles",
-              description: "Admin: Full access. Editor: Create, edit, publish. Viewer: Read-only access."
-            },
-            { 
-              icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>',
-              title: "Role-aware UI",
-              description: "Buttons and features are hidden or disabled based on user permissions."
-            }
-          ]
-        }
-      ];
-      
-      // Create feature sections
-      featureSections.forEach(section => {
-        const sectionDiv = document.createElement('div');
-        sectionDiv.className = 'mb-10';
-        
-        sectionDiv.innerHTML = `
-          <h2 class="text-xl font-semibold mb-6 pb-2 border-b">${section.title}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            ${section.features.map(feature => `
-              <div class="card card-hover h-full">
-                <div class="flex items-start">
-                  <div class="flex-shrink-0 mr-4">
-                    ${feature.icon}
-                  </div>
-                  <div>
-                    <h3 class="font-medium text-lg mb-1">${feature.title}</h3>
-                    <p class="text-gray-600">${feature.description}</p>
-                  </div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-        
-        container.appendChild(sectionDiv);
-      });
-      
-      // Demo links section
-      const demoLinksSection = document.createElement('div');
-      demoLinksSection.className = 'mb-10 flex flex-col md:flex-row gap-6';
-      demoLinksSection.innerHTML = `
-        <div class="card card-hover md:w-1/2 bg-gradient-to-br from-indigo-50 to-white">
-          <div class="flex items-center mb-4">
-            <div class="p-3 bg-indigo-100 rounded-lg mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M6.672 1.911a1 1 0 10-1.932.518l.259.966a1 1 0 001.932-.518l-.26-.966zM2.429 4.74a1 1 0 10-.517 1.932l.966.259a1 1 0 00.517-1.932l-.966-.26zm8.814-.569a1 1 0 00-1.415-1.414l-.707.707a1 1 0 101.415 1.415l.707-.708zm-7.071 7.072l.707-.707A1 1 0 003.465 9.12l-.708.707a1 1 0 001.415 1.415zm3.2-5.171a1 1 0 00-1.3 1.3l4 10a1 1 0 001.823.075l1.38-2.759 3.018 3.02a1 1 0 001.414-1.415l-3.019-3.02 2.76-1.379a1 1 0 00-.076-1.822l-10-4z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold">Interactive Feature Demo</h3>
-          </div>
-          <p class="text-gray-600 mb-4">
-            Explore all of LaunchPage's features with interactive examples and visual demonstrations.
-          </p>
-          <a href="/feature-demo.html" class="btn-primary inline-flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-            View Feature Demo
-          </a>
-        </div>
-        
-        <div class="card card-hover md:w-1/2 bg-gradient-to-br from-blue-50 to-white">
-          <div class="flex items-center mb-4">
-            <div class="p-3 bg-blue-100 rounded-lg mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M8 9a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 1h6v4H7V6zm-2 6v3h10v-3H5zm0-5v4h2V7H5z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold">Page Builder Preview</h3>
-          </div>
-          <p class="text-gray-600 mb-4">
-            Try our drag-and-drop page builder with live preview and inline content editing.
-          </p>
-          <a href="/builder-preview.html" class="btn-primary inline-flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-            Try Page Builder
-          </a>
-        </div>
-      `;
-      
-      container.appendChild(demoLinksSection);
-      
-      // Recent activity section
-      const recentSection = document.createElement('div');
-      recentSection.className = 'card';
-      recentSection.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-medium">Recent Activity</h2>
-          <span class="text-sm text-gray-500">Last 7 days</span>
-        </div>
-        <div class="space-y-4" id="recent-activity">
-          <div class="animate-pulse flex space-x-4">
-            <div class="rounded-full bg-gray-200 h-10 w-10"></div>
-            <div class="flex-1 space-y-2 py-1">
-              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-          <div class="animate-pulse flex space-x-4">
-            <div class="rounded-full bg-gray-200 h-10 w-10"></div>
-            <div class="flex-1 space-y-2 py-1">
-              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      container.appendChild(recentSection);
-      
-      // Fetch stats data
-      await fetchDashboardData();
     }
-    
-    async function fetchDashboardData() {
-      try {
-        // Fetch user data
-        const userData = await window.mockAPI.getCurrentUser();
-        document.getElementById('current-plan').textContent = userData.plan || 'Free';
-        
-        // Fetch pages data
-        const pagesData = await window.mockAPI.getPages();
-        document.getElementById('total-pages').textContent = pagesData.length || '0';
-        
-        // Update recent activity with real data or sample data
-        const activityElement = document.getElementById('recent-activity');
-        activityElement.innerHTML = `
-          <div class="flex items-start space-x-3">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <p class="font-medium">You created a new page</p>
-              <p class="text-sm text-gray-500">${new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-          <div class="flex items-start space-x-3">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <p class="font-medium">You updated your profile</p>
-              <p class="text-sm text-gray-500">${new Date(Date.now() - 86400000).toLocaleDateString()}</p>
-            </div>
-          </div>
-          <div class="flex items-start space-x-3">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <p class="font-medium">You previewed "Landing Page"</p>
-              <p class="text-sm text-gray-500">${new Date(Date.now() - 172800000).toLocaleDateString()}</p>
-            </div>
-          </div>
-        `;
-        
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      }
-    }
-    
-    // Initialize the dashboard
-    setupDashboard('dashboard', 'Dashboard', renderDashboardContent);
   </script>
 </body>
 </html>

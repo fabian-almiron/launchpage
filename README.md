@@ -9,99 +9,117 @@ A modern drag-and-drop website builder with themes, inline editing, autosave, an
 - **Theme Selection**: Choose from multiple themes to change your site's appearance
 - **Autosave**: Never lose your work with automatic saving
 - **Version History**: Browse and restore previous versions of your pages
+- **Custom Domains**: Connect your own domains to landing pages
 - **Multiple Publishing Options**: Download HTML, WordPress export, and more
 - **Team Collaboration**: Invite team members with different roles and permissions
 - **User-friendly Dashboard**: Manage all your pages and settings in one place
 
-## Installation
+## Installation & Setup
 
-### Prerequisites
+### Quick Start with Docker
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-
-### Option 1: Install from npm
+The easiest way to run LaunchPage Builder is with Docker:
 
 ```bash
-npm install launchpage-builder
+docker-compose up --build -d
 ```
 
-### Option 2: Install from GitHub
+This will start:
+- Backend API on port 3001
+- Frontend UI on port 8080
+- PostgreSQL database
+
+### Configuration
+
+Copy the example environment file and customize it:
 
 ```bash
-npm install fabian-almiron/launchpage_starter_builder_themes
+cp .env.example backend/.env
 ```
 
-### Option 3: Install from zip
+Key configurations include:
+- Database connection
+- JWT secret for authentication
+- GoDaddy API credentials (for domain management)
+- SSL settings
 
-1. Download the `launchpage-builder.zip` file
-2. Extract the contents to your desired location
-3. Navigate to the extracted directory
-4. Install dependencies:
+## Domain Management
 
-```bash
-npm install
-```
+### Connecting Custom Domains
 
-## Usage
+LaunchPage Builder allows you to connect custom domains to your landing pages through GoDaddy integration.
 
-### Starting the application
+#### Prerequisites
 
-```bash
-npm start
-```
+1. A GoDaddy account with API access
+2. API key and secret from GoDaddy Developer Portal
+3. One or more domains registered with GoDaddy
 
-This will start the application on http://localhost:3000
+#### Setup
 
-### Development mode
+1. Add your GoDaddy API credentials to the `.env` file:
+   ```
+   GODADDY_API_KEY=your_api_key_here
+   GODADDY_API_SECRET=your_api_secret_here
+   ```
 
-```bash
-npm run dev
-```
+2. Configure your server information:
+   ```
+   APP_HOSTNAME=builder.yourdomain.com
+   SERVER_IP=123.123.123.123
+   ```
 
-This will start the application with hot-reloading enabled, watching for CSS changes.
+#### Using Domain Management
 
-### Building for production
+1. In the page preview, click the "Connect Domain" button
+2. Enter the domain name (e.g., example.com)
+3. Choose the DNS record type (A or CNAME)
+4. Click "Connect Domain"
 
-```bash
-npm run build
-```
+The system will:
+1. Verify domain ownership through GoDaddy
+2. Configure DNS settings automatically
+3. Set up SSL certificates using Let's Encrypt
 
-This will build optimized CSS and prepare the application for deployment.
+### Domain Status
+
+Domains progress through these states:
+- **Pending**: Initial state after connecting
+- **Verified**: DNS configuration verified
+- **Live**: SSL certificate generated and domain ready to use
 
 ## Directory Structure
 
 ```
 launchpage-builder/
-├── frontend/
-│   ├── public/           # Static assets and HTML files
-│   │   ├── dist/         # Compiled CSS
-│   │   ├── shared/       # Shared JavaScript files
-│   │   └── ...           # HTML pages
-│   └── src/              # Source files
-│       └── styles.css    # Tailwind CSS source
-├── package.json          # Project configuration
-└── README.md             # This file
+├── backend/           # Node.js backend with Express
+│   ├── services/      # Service modules (GoDaddy, SSL, etc.)
+│   ├── prisma/        # Database schema and migrations
+│   └── scripts/       # Utility scripts
+├── frontend/          # Static frontend with HTML/CSS/JS
+│   └── public/        # Publicly served files
+├── docker-compose.yml # Docker configuration
+└── Dockerfile         # Frontend container definition
 ```
 
-## Pages Overview
+## Troubleshooting
 
-- **Dashboard**: Main overview of your pages and recent activity
-- **Pages**: List of your created pages with management options
-- **Templates**: Pre-built templates you can use to start a new page
-- **Feature Demo**: Demonstrations of all available features
-- **Team Settings**: Manage your team profile and API settings
-- **Team Members**: Invite and manage team members and their roles
-- **Billing**: Manage your subscription plan and payment details
-- **Page Builder**: Drag-and-drop interface to build and customize pages
+### Database Connection Issues
 
-## Demo Mode
+If the backend can't connect to the database:
 
-The application includes a mock API for demonstration purposes. In a real deployment, you would connect to your actual backend services.
+```bash
+docker-compose down
+docker volume rm launchpage_starter_builder_themes_postgres_data
+docker-compose up --build -d
+```
 
-## GitHub Repository
+### Domain Verification Problems
 
-This project is available on GitHub at: [https://github.com/fabian-almiron/launchpage_starter_builder_themes](https://github.com/fabian-almiron/launchpage_starter_builder_themes)
+DNS propagation can take up to 48 hours. If domains aren't verifying:
+1. Check that your GoDaddy API credentials are correct
+2. Verify the domain is registered in your GoDaddy account
+3. Try manual verification using `host` or `dig` commands
 
 ## License
 

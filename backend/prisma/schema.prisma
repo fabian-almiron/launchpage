@@ -14,6 +14,7 @@ model Team {
   pages     Page[]
   invites   TeamInvite[]
   inviteTokens InviteToken[]
+  domains   Domain[]
   createdAt DateTime @default(now())
 }
 
@@ -39,6 +40,7 @@ model Page {
   ownerId   String
   teamId    String?
   team      Team?    @relation(fields: [teamId], references: [id])
+  domains   Domain[]
   createdAt DateTime @default(now())
   versions  PageVersion[]
 }
@@ -70,4 +72,17 @@ model PageVersion {
   pageId    String
   content   String
   createdAt DateTime @default(now())
+}
+
+model Domain {
+  id         String   @id @default(cuid())
+  domain     String   @unique
+  teamId     String   // agency
+  team       Team     @relation(fields: [teamId], references: [id])
+  pageId     String   // linked page
+  page       Page     @relation(fields: [pageId], references: [id])
+  status     String   // 'pending', 'verified', 'live'
+  recordType String   @default("A") // 'A' or 'CNAME'
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

@@ -3,110 +3,431 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Preview Page</title>
+  <title>Page Preview | LaunchPage</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="/dist/output.css" rel="stylesheet">
-  <link href="/shared/styles.css" rel="stylesheet">
-  <script src="/shared/mock-api.js"></script>
   <style>
-    .preview-wrapper {
-      max-width: 960px;
+    /* Base styles */
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      color: #374151;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
-      background: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      border-radius: 0.5rem;
     }
-    .preview-content img {
-      max-width: 100%;
-      height: auto;
+    
+    /* Preview header */
+    .preview-header {
+      padding: 1rem;
+      background-color: #f3f4f6;
+      border-radius: 0.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .preview-header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #4b5563;
+      margin: 0;
+    }
+    
+    .preview-header button {
+      padding: 0.5rem 1rem;
+      background-color: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .preview-header button:hover {
+      background-color: #4f46e5;
+    }
+    
+    /* Domain info */
+    .domain-info {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    
+    .domain-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+    
+    .domain-badge-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .domain-badge-verified {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    
+    .domain-badge-live {
+      background-color: #d1fae5;
+      color: #047857;
+    }
+    
+    /* Content container */
+    .preview-content {
+      padding: 2rem;
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    
+    /* Typography enhancements for the preview content */
+    .preview-content h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    
+    .preview-content h2 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: #1f2937;
+    }
+    
+    .preview-content h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+    }
+    
+    .preview-content p {
+      margin-bottom: 1rem;
+    }
+    
+    .preview-content a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    
+    .preview-content a:hover {
+      text-decoration: underline;
+    }
+    
+    .preview-content ul, .preview-content ol {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+    }
+    
+    .preview-content li {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Connect Domain Button */
+    .connect-domain-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 0.5rem;
+    }
+    
+    .connect-domain-btn:hover {
+      background-color: #4338ca;
+    }
+    
+    .connect-domain-btn svg {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.375rem;
+    }
+    
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      max-width: 24rem;
+      z-index: 50;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification-success {
+      background-color: #ecfdf5;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    
+    .notification-error {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #b91c1c;
+    }
+    
+    .notification-info {
+      background-color: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    .notification-icon {
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .notification-message {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 500;
+    }
+    
+    .notification-close {
+      margin-left: 0.75rem;
+      cursor: pointer;
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans min-h-screen py-12">
-  <!-- Loading indicator -->
-  <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-    <div class="loading-spinner"></div>
-  </div>
+<body>
+  <!-- Notification container -->
+  <div id="notification-container"></div>
 
-  <div class="container mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Page Preview</h1>
-      <div class="flex space-x-4">
-        <a href="#" id="edit-link" class="text-blue-600 hover:underline">Edit Page</a>
-        <a href="/pages.html" class="text-blue-600 hover:underline">Back to Pages</a>
+  <div class="preview-header">
+    <div>
+      <h1>Preview: <span id="page-title">Loading...</span></h1>
+      <div class="domain-info">
+        <span id="domains-list">Loading domains...</span>
+        <button id="connect-domain-btn" class="connect-domain-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/>
+          </svg>
+          Connect Domain
+        </button>
       </div>
     </div>
-    
-    <div class="preview-wrapper">
-      <h1 id="page-title" class="text-3xl font-bold mb-6">Loading...</h1>
-      <div id="page-content" class="preview-content prose max-w-none">
-        <p>Loading content...</p>
-      </div>
-    </div>
+    <button id="close-preview">Close Preview</button>
   </div>
-
+  
+  <div class="preview-content" id="content-container">
+    <!-- Content will be loaded here -->
+    <p>Loading content...</p>
+  </div>
+  
+  <script src="/shared/mock-api.js"></script>
   <script>
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      // Remove loading spinner
-      const loadingElement = document.getElementById('loading');
-      if (loadingElement) {
-        loadingElement.remove();
-      }
+    // Notification system
+    function showNotification(message, type = 'info', duration = 3000) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
       
-      // Get page ID from URL
-      const pageId = new URLSearchParams(window.location.search).get("id");
-      
-      if (pageId) {
-        // Set edit link
-        document.getElementById('edit-link').href = `/edit-page.html?id=${pageId}`;
-        
-        // Load page content
-        loadPageContent(pageId);
+      // Icon based on notification type
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+      } else if (type === 'error') {
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
       } else {
-        // No page ID provided
-        document.getElementById('page-title').textContent = 'No Page Selected';
-        document.getElementById('page-content').innerHTML = '<p>No page ID was provided in the URL.</p>';
+        iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>';
       }
-    });
-    
-    async function loadPageContent(pageId) {
+      
+      // Set notification content
+      notification.innerHTML = `
+        <div class="notification-icon">${iconSvg}</div>
+        <div class="notification-message">${message}</div>
+        <div class="notification-close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </div>
+      `;
+      
+      // Add to notification container
+      const container = document.getElementById('notification-container');
+      container.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      
+      // Add close button handler
+      notification.querySelector('.notification-close').addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      });
+      
+      // Auto-remove after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            notification.remove();
+          }, 300);
+        }, duration);
+      }
+      
+      return notification;
+    }
+
+    // Get status badge HTML based on domain status
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'pending':
+          return '<span class="domain-badge domain-badge-pending">Pending</span>';
+        case 'verified':
+          return '<span class="domain-badge domain-badge-verified">Verified</span>';
+        case 'live':
+          return '<span class="domain-badge domain-badge-live">Live</span>';
+        default:
+          return `<span class="domain-badge domain-badge-pending">${status}</span>`;
+      }
+    }
+
+    // Function to load and display page content with domain information
+    async function loadPagePreview() {
+      const pageId = localStorage.getItem('previewPageId');
+      
+      if (!pageId) {
+        document.getElementById('content-container').innerHTML = '<p>No page selected for preview.</p>';
+        document.getElementById('page-title').textContent = 'Error';
+        document.getElementById('domains-list').textContent = 'No page selected';
+        showNotification('No page selected for preview', 'error');
+        return;
+      }
+      
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3001/api/pages/${pageId}`, {
-          headers: { 
-            'Authorization': 'Bearer ' + token 
-          }
-        });
+        console.log('Loading preview for page ID:', pageId);
         
-        if (!res.ok) {
-          // Mock data for preview if page not found
-          document.getElementById('page-title').textContent = 'Sample Page';
-          document.getElementById('page-content').innerHTML = `
-            <p>This is a sample page preview. In a real application, this would display the actual content of the page with ID: ${pageId}.</p>
-            <h2>Sample Heading</h2>
-            <p>This is some sample content to demonstrate how the preview would look.</p>
-          `;
-          document.title = 'Sample Page | Preview';
-          return;
+        // Get all pages from the mockAPI
+        const allPages = await window.mockAPI.getPages();
+        
+        // Find the page with the matching ID
+        const page = allPages.find(p => p.id === pageId);
+        
+        if (!page) {
+          throw new Error(`Page with ID ${pageId} not found`);
         }
         
-        const page = await res.json();
+        console.log('Found page for preview:', page);
         
-        // Update page title and content
+        // Update page title
         document.getElementById('page-title').textContent = page.title || 'Untitled Page';
-        document.getElementById('page-content').innerHTML = page.content || '<p>No content</p>';
-        document.title = (page.title || 'Untitled Page') + ' | Preview';
+        document.title = `Preview: ${page.title || 'Untitled Page'} | LaunchPage`;
+        
+        // Render the content
+        document.getElementById('content-container').innerHTML = page.content || '<p>No content available.</p>';
+        
+        // Try to fetch domains for this page
+        try {
+          const domains = await window.mockAPI.getDomainsForPage(pageId);
+          
+          if (domains && domains.length > 0) {
+            const domainsHtml = domains.map(domain => {
+              return `<a href="https://${domain.domain}" target="_blank" class="text-blue-600 hover:underline">${domain.domain}</a>${getStatusBadge(domain.status)}`;
+            }).join(', ');
+            
+            document.getElementById('domains-list').innerHTML = `Available at: ${domainsHtml}`;
+          } else {
+            document.getElementById('domains-list').innerHTML = 'No domains connected to this page';
+          }
+        } catch (domainError) {
+          console.error('Error fetching domains:', domainError);
+          document.getElementById('domains-list').textContent = 'Unable to load domain information';
+        }
+        
+        showNotification('Preview loaded successfully', 'success', 2000);
         
       } catch (error) {
         console.error('Error loading page content:', error);
-        
-        // Show error message
+        document.getElementById('content-container').innerHTML = '<p>An error occurred while loading the content.</p>';
         document.getElementById('page-title').textContent = 'Error';
-        document.getElementById('page-content').innerHTML = '<p>There was an error loading the page content. Please try again later.</p>';
+        document.getElementById('domains-list').textContent = 'Error loading domain information';
+        showNotification('An error occurred while loading the content', 'error');
       }
     }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load the preview content
+      loadPagePreview();
+      
+      // Handle close button
+      const closeButton = document.getElementById('close-preview');
+      if (closeButton) {
+        closeButton.addEventListener('click', function() {
+          window.close();
+        });
+      }
+      
+      // Handle connect domain button
+      const connectDomainBtn = document.getElementById('connect-domain-btn');
+      if (connectDomainBtn) {
+        connectDomainBtn.addEventListener('click', function() {
+          const pageId = localStorage.getItem('previewPageId');
+          if (pageId) {
+            // Store the page ID for the domain connection screen
+            localStorage.setItem('connectDomainPageId', pageId);
+            
+            // Try to navigate to the domains page
+            try {
+              // First, try to navigate via the opener if it exists (new window case)
+              if (window.opener && !window.opener.closed) {
+                window.opener.location.hash = 'domains';
+                window.close();
+              } else {
+                // If no opener or if it's closed, redirect the current window
+                showNotification('Redirecting to domain management...', 'info');
+                
+                // Use timeout to allow notification to show
+                setTimeout(() => {
+                  // Try to go to the domains page directly
+                  window.location.href = '/domains.html?pageId=' + pageId;
+                }, 1000);
+              }
+            } catch (e) {
+              console.error('Navigation error:', e);
+              // Fallback to direct navigation
+              window.location.href = '/domains.html?pageId=' + pageId;
+            }
+          } else {
+            showNotification('Cannot connect domain: Page ID not found', 'error');
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

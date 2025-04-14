@@ -2,32 +2,29 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
     "postcss": "^8.5.3",
-    "tailwindcss": "^3.3.3",
-    "serve": "^14.2.1"
+    "tailwindcss": "^3.3.3"
   },
   "name": "launchpage-builder",
   "version": "1.0.0",
+  "description": "A modern drag-and-drop website builder with themes, domains and publishing options",
   "main": "index.js",
-  "bin": {
-    "launchpage-install": "./install.js"
-  },
   "scripts": {
-    "start": "serve -s frontend/public",
-    "build": "tailwindcss -i frontend/src/styles.css -o frontend/public/dist/output.css --minify",
-    "dev": "serve frontend/public & tailwindcss -i frontend/src/styles.css -o frontend/public/dist/output.css --watch",
-    "package": "npm run build && mkdir -p dist && zip -r dist/launchpage-builder.zip frontend package.json README.md LICENSE install.js",
-    "postinstall": "node install.js"
+    "start": "./start.sh",
+    "build": "docker-compose build",
+    "stop": "docker-compose down",
+    "css": "cd frontend && npx tailwindcss -i src/styles.css -o public/dist/output.css --minify",
+    "dev": "cd frontend && npm run dev"
   },
   "keywords": [
     "website",
     "builder",
     "drag-and-drop",
     "publishing",
-    "themes"
+    "themes",
+    "domains"
   ],
   "author": "",
   "license": "MIT",
-  "description": "A modern drag-and-drop website builder with themes and publishing options",
   "dependencies": {},
   "repository": {
     "type": "git",

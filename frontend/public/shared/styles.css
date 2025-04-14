@@ -243,7 +243,13 @@
 
 /* Fix for sidebar positioning */
 #sidebar {
-  transform: none;
+  transform: translateX(-100%);
+}
+
+@media (min-width: 768px) {
+  #sidebar {
+    transform: translateX(0);
+  }
 }
 
 /* Fix main content positioning */
